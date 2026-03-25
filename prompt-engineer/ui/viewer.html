@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Experiment Report Viewer</title>
+<style>
+  :root { --bg: #0f172a; --surface: #1e293b; --border: #334155; --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8; --green: #4ade80; --red: #f87171; --yellow: #fbbf24; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); padding: 2rem; }
+  h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  h2 { font-size: 1.2rem; color: var(--accent); margin: 1.5rem 0 0.75rem; }
+  .subtitle { color: var(--muted); margin-bottom: 1.5rem; }
+  .upload-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-bottom: 1.5rem; }
+  .upload-zone:hover { border-color: var(--accent); }
+  .upload-zone input { display: none; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th, td { padding: 0.5rem 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--accent); font-weight: 600; cursor: pointer; user-select: none; }
+  th:hover { text-decoration: underline; }
+  tr:hover td { background: rgba(56, 189, 248, 0.05); }
+  .rank-1 { color: var(--green); font-weight: 700; }
+  .rank-2 { color: var(--yellow); }
+  .rank-3 { color: var(--yellow); }
+  .bar-container { display: flex; align-items: center; gap: 0.5rem; }
+  .bar { height: 18px; border-radius: 3px; background: var(--accent); transition: width 0.3s; }
+  .bar-label { font-size: 0.75rem; color: var(--muted); min-width: 3rem; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+  .stat-card { text-align: center; }
+  .stat-value { font-size: 1.8rem; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 0.8rem; color: var(--muted); }
+  .hidden { display: none; }
+  #results { transition: opacity 0.3s; }
+</style>
+</head>
+<body>
+
+<h1>Prompt Experiment Viewer</h1>
+<p class="subtitle">Load scores.jsonl from your experiment to visualize results</p>
+
+<div class="upload-zone" id="dropZone">
+  <p>Drop <strong>scores.jsonl</strong> here or click to browse</p>
+  <input type="file" id="fileInput" accept=".jsonl,.json">
+</div>
+
+<div id="results" class="hidden">
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <h2>Rankings</h2>
+  <div class="card">
+    <table id="rankTable">
+      <thead><tr id="rankHeader"></tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+
+  <h2>Score by Template</h2>
+  <div class="card" id="templateBars"></div>
+
+  <h2>Score by Model</h2>
+  <div class="card" id="modelBars"></div>
+
+  <h2>Score by Parameter Set</h2>
+  <div class="card" id="paramBars"></div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const dropZone = $('#dropZone');
+const fileInput = $('#fileInput');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent)'; });
+dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = 'var(--border)'; });
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.style.borderColor = 'var(--border)'; handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.trim().split('\n').filter(Boolean);
+    const records = lines.map(l => JSON.parse(l));
+    render(records);
+  };
+  reader.readAsText(file);
+}
+
+function mean(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+
+function groupBy(arr, key) {
+  return arr.reduce((acc, item) => {
+    const k = typeof key === 'function' ? key(item) : item[key];
+    (acc[k] = acc[k] || []).push(item);
+    return acc;
+  }, {});
+}
+
+function renderBars(container, groups, maxScore) {
+  let html = '';
+  const sorted = Object.entries(groups).sort((a, b) => b[1] - a[1]);
+  for (const [label, score] of sorted) {
+    const pct = (score / maxScore) * 100;
+    html += `<div class="bar-container" style="margin-bottom:0.4rem">
+      <span style="min-width:140px;font-size:0.8rem">${label}</span>
+      <div class="bar" style="width:${pct}%"></div>
+      <span class="bar-label">${score.toFixed(2)}</span>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function render(records) {
+  $('#results').classList.remove('hidden');
+
+  // Stats
+  const scores = records.map(r => r.composite_score || 0);
+  const avgScore = mean(scores);
+  const bestScore = Math.max(...scores);
+  const cellIds = [...new Set(records.map(r => r.cell_id))];
+  const statsHtml = [
+    { value: records.length, label: 'Total Evaluations' },
+    { value: cellIds.length, label: 'Unique Cells' },
+    { value: avgScore.toFixed(2), label: 'Avg Composite Score' },
+    { value: bestScore.toFixed(2), label: 'Best Score' },
+  ].map(s => `<div class="card stat-card"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+  $('#statsGrid').innerHTML = statsHtml;
+
+  // Rankings
+  const byCellId = groupBy(records, 'cell_id');
+  const cellStats = Object.entries(byCellId).map(([id, recs]) => ({
+    cell_id: id,
+    template_id: recs[0].template_id || id.split('_')[0] || '-',
+    model: recs[0].model || '-',
+    param_id: recs[0].param_id || '-',
+    mean_score: mean(recs.map(r => r.composite_score || 0)),
+    count: recs.length,
+  })).sort((a, b) => b.mean_score - a.mean_score);
+
+  const cols = ['Rank', 'Cell ID', 'Template', 'Model', 'Params', 'Mean Score', 'N'];
+  $('#rankHeader').innerHTML = cols.map(c => `<th>${c}</th>`).join('');
+  $('#rankBody').innerHTML = cellStats.map((c, i) => {
+    const cls = i < 3 ? `rank-${i + 1}` : '';
+    return `<tr class="${cls}">
+      <td>#${i + 1}</td><td>${c.cell_id}</td><td>${c.template_id}</td>
+      <td>${c.model}</td><td>${c.param_id}</td>
+      <td>${c.mean_score.toFixed(2)}</td><td>${c.count}</td>
+    </tr>`;
+  }).join('');
+
+  // Axis bars
+  const maxScore = 10;
+  const templateGroups = {};
+  const modelGroups = {};
+  const paramGroups = {};
+  for (const r of records) {
+    const s = r.composite_score || 0;
+    const tid = r.template_id || 'unknown';
+    const mid = r.model || 'unknown';
+    const pid = r.param_id || 'unknown';
+    templateGroups[tid] = templateGroups[tid] || [];
+    templateGroups[tid].push(s);
+    modelGroups[mid] = modelGroups[mid] || [];
+    modelGroups[mid].push(s);
+    paramGroups[pid] = paramGroups[pid] || [];
+    paramGroups[pid].push(s);
+  }
+  const avgGroups = obj => Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, mean(v)]));
+  renderBars($('#templateBars'), avgGroups(templateGroups), maxScore);
+  renderBars($('#modelBars'), avgGroups(modelGroups), maxScore);
+  renderBars($('#paramBars'), avgGroups(paramGroups), maxScore);
+}
+</script>
+</body>
+</html>

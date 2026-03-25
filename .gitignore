@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+
+# Environment
+.env
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Experiment data (generated at runtime)
+**/experiments/2026-*/
+**/experiments/20*/
+!**/experiments/.gitkeep
+
+# Dev artifacts
+**/prompt-engineer-workspace/
+**/benchmarks/
+*.skill
+
+# Claude
+.claude/

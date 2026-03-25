@@ -1,0 +1,49 @@
+defaults:
+  max_concurrent_requests: 5
+  retry_attempts: 3
+  retry_backoff_base: 2.0
+  default_repetitions: 3
+  budget_usd: 10.00
+
+providers:
+  anthropic:
+    api_key_env: "ANTHROPIC_API_KEY"
+    rate_limit_rpm: 60
+    base_url: "https://api.anthropic.com"
+  openai:
+    api_key_env: "OPENAI_API_KEY"
+    rate_limit_rpm: 60
+    base_url: "https://api.openai.com/v1"
+  google:
+    api_key_env: "GOOGLE_API_KEY"
+    rate_limit_rpm: 60
+  ollama:
+    base_url: "http://localhost:11434"
+    rate_limit_rpm: 999
+
+cost_per_million_tokens:
+  claude-sonnet-4-20250514:
+    input: 3.00
+    output: 15.00
+  claude-opus-4-20250514:
+    input: 15.00
+    output: 75.00
+  claude-haiku-4-5-20251001:
+    input: 0.80
+    output: 4.00
+  gpt-4o:
+    input: 2.50
+    output: 10.00
+  gpt-4o-mini:
+    input: 0.15
+    output: 0.60
+  gemini-2.0-flash:
+    input: 0.10
+    output: 0.40
+  gemini-2.0-pro:
+    input: 1.25
+    output: 5.00
+
+evaluation:
+  default_judge_model: "claude-sonnet-4-20250514"
+  judge_temperature: 0.0

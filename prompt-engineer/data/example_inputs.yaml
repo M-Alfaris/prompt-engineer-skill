@@ -1,0 +1,60 @@
+inputs:
+  - id: "input_001"
+    text: "How do I reset my password? I've been locked out for 2 hours."
+    metadata:
+      category: "account"
+      difficulty: "easy"
+
+  - id: "input_002"
+    text: "My order arrived damaged and I need a replacement ASAP. This is the third time this has happened."
+    metadata:
+      category: "order_issue"
+      difficulty: "hard"
+
+  - id: "input_003"
+    text: "I was charged twice for my subscription. Can you fix this?"
+    metadata:
+      category: "billing"
+      difficulty: "medium"
+
+  - id: "input_004"
+    text: "I love your product but the mobile app keeps crashing. Any updates coming?"
+    metadata:
+      category: "technical"
+      difficulty: "medium"
+
+  - id: "input_005"
+    text: "I want to cancel my account. The service hasn't been worth it lately."
+    metadata:
+      category: "retention"
+      difficulty: "hard"
+
+  - id: "input_006"
+    text: "Can you explain the difference between your Pro and Enterprise plans?"
+    metadata:
+      category: "sales"
+      difficulty: "easy"
+
+  - id: "input_007"
+    text: "I submitted a refund request 2 weeks ago and haven't heard back. This is unacceptable."
+    metadata:
+      category: "billing"
+      difficulty: "hard"
+
+  - id: "input_008"
+    text: "Hi! First time using your service. Where do I start?"
+    metadata:
+      category: "onboarding"
+      difficulty: "easy"
+
+  - id: "input_009"
+    text: "The export feature doesn't support CSV format. Is there a workaround?"
+    metadata:
+      category: "technical"
+      difficulty: "medium"
+
+  - id: "input_010"
+    text: "I need to update my billing address but the form isn't saving. Help?"
+    metadata:
+      category: "technical"
+      difficulty: "medium"

@@ -1,0 +1,77 @@
+experiment:
+  id: "2026-03-24-customer-support-tone"
+  name: "Customer Support Tone Optimization"
+  description: "Find the best prompt formula for empathetic, helpful customer support responses"
+
+goal:
+  task: "Generate empathetic, helpful customer support responses"
+  input_format: "Customer message (plain text)"
+  output_format: "Support agent response (plain text, <200 words)"
+  success_definition: "High empathy score + actionable resolution"
+
+axes:
+  templates:
+    - id: "zero_shot"
+      file: "templates/zero_shot.yaml"
+    - id: "few_shot_3"
+      file: "templates/few_shot_3.yaml"
+    - id: "cot_empathy"
+      file: "templates/cot_empathy.yaml"
+    - id: "role_expert"
+      file: "templates/role_expert.yaml"
+
+  parameters:
+    - id: "conservative"
+      temperature: 0.2
+      max_tokens: 256
+      top_p: 0.9
+    - id: "balanced"
+      temperature: 0.5
+      max_tokens: 512
+      top_p: 0.95
+    - id: "creative"
+      temperature: 0.8
+      max_tokens: 512
+      top_p: 1.0
+
+  models:
+    - id: "sonnet"
+      name: "claude-sonnet-4-20250514"
+      provider: "anthropic"
+    - id: "gpt4o"
+      name: "gpt-4o"
+      provider: "openai"
+    - id: "haiku"
+      name: "claude-haiku-4-5-20251001"
+      provider: "anthropic"
+
+data:
+  test_inputs: "data/test_inputs.yaml"
+
+evaluation:
+  method: "composite"
+  judge_model: "claude-sonnet-4-20250514"
+  criteria:
+    - name: "empathy"
+      description: "How empathetic and understanding is the response?"
+      weight: 0.3
+    - name: "actionability"
+      description: "Does the response provide a clear next step?"
+      weight: 0.3
+    - name: "accuracy"
+      description: "Is the information correct and relevant?"
+      weight: 0.25
+    - name: "tone"
+      description: "Is the tone professional yet warm?"
+      weight: 0.15
+
+execution:
+  strategy: "full"
+  repetitions: 3
+  randomize_order: true
+  max_concurrent: 5
+
+budget:
+  max_cost_usd: 15.00
+  max_api_calls: 1000
+  warn_at_usd: 10.00
