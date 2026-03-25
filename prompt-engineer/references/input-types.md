@@ -22,7 +22,22 @@ Only recommend models from providers the user has keys for. Map keys to provider
 | `GROQ_API_KEY` | Groq | Llama, Mixtral, Gemma (via OpenAI-compatible) |
 | `TOGETHER_API_KEY` | Together AI | Llama, Mistral, Qwen (via OpenAI-compatible) |
 | `FIREWORKS_API_KEY` | Fireworks | Llama, Mixtral (via OpenAI-compatible) |
+| `OPENROUTER_API_KEY` | OpenRouter | 100+ models from multiple providers (via OpenAI-compatible) |
 | No key needed | Ollama (local) | Any model user has pulled locally |
+
+**Known base_urls** (so you don't have to search for them):
+
+| Provider | base_url |
+|----------|----------|
+| OpenAI | `https://api.openai.com/v1` |
+| Groq | `https://api.groq.com/openai/v1` |
+| Together AI | `https://api.together.xyz/v1` |
+| Fireworks | `https://api.fireworks.ai/inference/v1` |
+| OpenRouter | `https://openrouter.ai/api/v1` |
+| Ollama | `http://localhost:11434/v1` |
+| vLLM | `http://localhost:8000/v1` |
+
+All of these use the OpenAI-compatible protocol — same `openai` SDK, different `base_url`.
 
 If the user only has `GROQ_API_KEY`:
 - All experiment models must be Groq models
