@@ -55,7 +55,7 @@ def generate_full_factorial(config: ExperimentConfig) -> list[dict[str, Any]]:
     for tpl, param, model in itertools.product(templates, parameters, models):
         for rep in range(1, reps + 1):
             cell_id = f"cell-{idx:04d}"
-            cells.append({
+            cell = {
                 "cell_id": cell_id,
                 "template_id": tpl.id,
                 "template_file": tpl.file,
@@ -72,7 +72,15 @@ def generate_full_factorial(config: ExperimentConfig) -> list[dict[str, Any]]:
                 "top_p": param.top_p,
                 "repetition": rep,
                 "status": "pending",
-            })
+            }
+            # Include extended parameters when present
+            for ext_key in ("top_k", "frequency_penalty", "presence_penalty",
+                            "json_mode", "thinking", "thinking_budget",
+                            "seed", "stop_sequences", "extra"):
+                val = getattr(param, ext_key, None)
+                if val is not None:
+                    cell[ext_key] = val
+            cells.append(cell)
             idx += 1
 
     return cells

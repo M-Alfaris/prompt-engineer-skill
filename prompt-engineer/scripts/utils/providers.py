@@ -89,6 +89,7 @@ class LLMProvider(Protocol):
         max_tokens: int = 512,
         top_p: float = 1.0,
         system: str | None = None,
+        **kwargs: Any,
     ) -> CompletionResult:
         """Send a chat completion request and return a structured result.
 
@@ -102,6 +103,16 @@ class LLMProvider(Protocol):
             top_p: Nucleus-sampling probability mass.
             system: System prompt.  When *prompt* is a dict that already
                 contains a ``"system"`` key, this argument is ignored.
+            **kwargs: Extended parameters forwarded to the provider API.
+                Supported keys (provider-dependent):
+                - top_k (int): Anthropic, Google, Ollama
+                - json_mode (bool): OpenAI, Groq (response_format: json_object)
+                - frequency_penalty (float): OpenAI, Groq
+                - presence_penalty (float): OpenAI, Groq
+                - thinking (bool): Anthropic extended thinking
+                - thinking_budget (int): Anthropic thinking token budget
+                - seed (int): OpenAI, Groq
+                - stop_sequences (list[str]): All providers
 
         Returns:
             A populated :class:`CompletionResult`.
@@ -264,21 +275,8 @@ class AnthropicProvider:
         max_tokens: int = 512,
         top_p: float = 1.0,
         system: str | None = None,
+        **extra: Any,
     ) -> CompletionResult:
-        """Send a request to the Anthropic Messages API.
-
-        Args:
-            prompt: User message string or dict with optional ``"system"``,
-                ``"user"``, and ``"images"`` keys.
-            model: Anthropic model identifier (e.g. ``"claude-opus-4-5"``).
-            temperature: Sampling temperature.
-            max_tokens: Maximum tokens to generate.
-            top_p: Nucleus-sampling probability mass.
-            system: System prompt (overridden by ``prompt["system"]`` if present).
-
-        Returns:
-            Populated :class:`CompletionResult`.
-        """
         resolved_system, chat_messages = _build_messages(prompt, system)
 
         # Convert OpenAI-style image_url blocks to Anthropic source blocks.
@@ -308,7 +306,7 @@ class AnthropicProvider:
                         new_content.append(block)
                 msg["content"] = new_content
 
-        kwargs: dict[str, Any] = {
+        api_kwargs: dict[str, Any] = {
             "model": model,
             "max_tokens": max_tokens,
             "messages": chat_messages,
@@ -316,10 +314,17 @@ class AnthropicProvider:
             "top_p": top_p,
         }
         if resolved_system:
-            kwargs["system"] = resolved_system
+            api_kwargs["system"] = resolved_system
+        # Anthropic extended params
+        if extra.get("top_k") is not None:
+            api_kwargs["top_k"] = extra["top_k"]
+        if extra.get("stop_sequences"):
+            api_kwargs["stop_sequences"] = extra["stop_sequences"]
+        if extra.get("thinking"):
+            api_kwargs["thinking"] = {"type": "enabled", "budget_tokens": extra.get("thinking_budget", 1024)}
 
         t0 = time.perf_counter()
-        response = await _with_retry(self._client.messages.create, **kwargs)
+        response = await _with_retry(self._client.messages.create, **api_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000
 
         text = response.content[0].text
@@ -361,6 +366,7 @@ class GoogleProvider:
         max_tokens: int = 512,
         top_p: float = 1.0,
         system: str | None = None,
+        **extra: Any,
     ) -> CompletionResult:
         """Send a request to the Google Gemini GenerateContent API.
 
@@ -503,23 +509,8 @@ class OpenAICompatibleProvider:
         max_tokens: int = 512,
         top_p: float = 1.0,
         system: str | None = None,
+        **extra: Any,
     ) -> CompletionResult:
-        """Send a request to an OpenAI-compatible chat-completions endpoint.
-
-        Args:
-            prompt: User message string or dict with optional ``"system"``,
-                ``"user"``, and ``"images"`` keys.  Image content is passed
-                using the OpenAI ``image_url`` format, which is already the
-                native output of :func:`_build_messages`.
-            model: Model identifier forwarded verbatim to the API.
-            temperature: Sampling temperature.
-            max_tokens: Maximum tokens to generate.
-            top_p: Nucleus-sampling probability mass.
-            system: System prompt (overridden by ``prompt["system"]`` if present).
-
-        Returns:
-            Populated :class:`CompletionResult`.
-        """
         resolved_system, user_messages = _build_messages(prompt, system)
 
         messages: list[dict[str, Any]] = []
@@ -529,14 +520,29 @@ class OpenAICompatibleProvider:
 
         effective_model = model or self._default_model or ""
 
+        api_kwargs: dict[str, Any] = {
+            "model": effective_model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "top_p": top_p,
+        }
+        # OpenAI-compatible extended params
+        if extra.get("json_mode"):
+            api_kwargs["response_format"] = {"type": "json_object"}
+        if extra.get("frequency_penalty") is not None:
+            api_kwargs["frequency_penalty"] = extra["frequency_penalty"]
+        if extra.get("presence_penalty") is not None:
+            api_kwargs["presence_penalty"] = extra["presence_penalty"]
+        if extra.get("seed") is not None:
+            api_kwargs["seed"] = extra["seed"]
+        if extra.get("stop_sequences"):
+            api_kwargs["stop"] = extra["stop_sequences"]
+
         t0 = time.perf_counter()
         response = await _with_retry(
             self._client.chat.completions.create,
-            model=effective_model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            top_p=top_p,
+            **api_kwargs,
         )
         latency_ms = (time.perf_counter() - t0) * 1000
 
