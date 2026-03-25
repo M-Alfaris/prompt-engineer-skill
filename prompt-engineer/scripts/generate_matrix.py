@@ -73,13 +73,12 @@ def generate_full_factorial(config: ExperimentConfig) -> list[dict[str, Any]]:
                 "repetition": rep,
                 "status": "pending",
             }
-            # Include extended parameters when present
-            for ext_key in ("top_k", "frequency_penalty", "presence_penalty",
-                            "json_mode", "thinking", "thinking_budget",
-                            "seed", "stop_sequences", "extra"):
-                val = getattr(param, ext_key, None)
-                if val is not None:
-                    cell[ext_key] = val
+            # Include ALL extra parameters from the parameter set
+            # (Pydantic extra="allow" lets any field through)
+            known_keys = {"id", "temperature", "max_tokens", "top_p"}
+            for key, val in param.model_dump().items():
+                if key not in known_keys and val is not None:
+                    cell[key] = val
             cells.append(cell)
             idx += 1
 

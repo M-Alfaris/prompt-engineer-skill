@@ -315,13 +315,22 @@ class AnthropicProvider:
         }
         if resolved_system:
             api_kwargs["system"] = resolved_system
-        # Anthropic extended params
-        if extra.get("top_k") is not None:
-            api_kwargs["top_k"] = extra["top_k"]
-        if extra.get("stop_sequences"):
-            api_kwargs["stop_sequences"] = extra["stop_sequences"]
-        if extra.get("thinking"):
-            api_kwargs["thinking"] = {"type": "enabled", "budget_tokens": extra.get("thinking_budget", 1024)}
+        # Map known params that need transformation for Anthropic
+        _ANTHROPIC_TRANSFORMS = {
+            "thinking": lambda v, e: ("thinking", {"type": "enabled", "budget_tokens": e.get("thinking_budget", 1024)}) if v else None,
+            "thinking_budget": lambda v, e: None,  # handled by "thinking" transform
+            "json_mode": lambda v, e: None,  # Anthropic handles JSON via tool_use, not a param
+        }
+        # Forward all extra params
+        for key, val in extra.items():
+            if val is None:
+                continue
+            if key in _ANTHROPIC_TRANSFORMS:
+                result = _ANTHROPIC_TRANSFORMS[key](val, extra)
+                if result:
+                    api_kwargs[result[0]] = result[1]
+            else:
+                api_kwargs[key] = val
 
         t0 = time.perf_counter()
         response = await _with_retry(self._client.messages.create, **api_kwargs)
@@ -527,17 +536,22 @@ class OpenAICompatibleProvider:
             "max_tokens": max_tokens,
             "top_p": top_p,
         }
-        # OpenAI-compatible extended params
-        if extra.get("json_mode"):
-            api_kwargs["response_format"] = {"type": "json_object"}
-        if extra.get("frequency_penalty") is not None:
-            api_kwargs["frequency_penalty"] = extra["frequency_penalty"]
-        if extra.get("presence_penalty") is not None:
-            api_kwargs["presence_penalty"] = extra["presence_penalty"]
-        if extra.get("seed") is not None:
-            api_kwargs["seed"] = extra["seed"]
-        if extra.get("stop_sequences"):
-            api_kwargs["stop"] = extra["stop_sequences"]
+        # Map known params that need transformation
+        _PARAM_TRANSFORMS = {
+            "json_mode": lambda v: ("response_format", {"type": "json_object"}) if v else None,
+            "stop_sequences": lambda v: ("stop", v) if v else None,
+        }
+        # Forward all extra params to the API
+        for key, val in extra.items():
+            if val is None:
+                continue
+            if key in _PARAM_TRANSFORMS:
+                result = _PARAM_TRANSFORMS[key](val)
+                if result:
+                    api_kwargs[result[0]] = result[1]
+            else:
+                # Pass through as-is — the API will accept or ignore it
+                api_kwargs[key] = val
 
         t0 = time.perf_counter()
         response = await _with_retry(

@@ -95,13 +95,11 @@ def _generate_matrix(config: ExperimentConfig) -> list[dict[str, Any]]:
             "cost_per_million_input": getattr(model, "cost_per_million_input", None),
             "cost_per_million_output": getattr(model, "cost_per_million_output", None),
         }
-        # Include extended parameters when present
-        for ext_key in ("top_k", "frequency_penalty", "presence_penalty",
-                        "json_mode", "thinking", "thinking_budget",
-                        "seed", "stop_sequences", "extra"):
-            val = getattr(param, ext_key, None)
-            if val is not None:
-                cell[ext_key] = val
+        # Include ALL extra parameters from the parameter set
+        known_keys = {"id", "temperature", "max_tokens", "top_p"}
+        for key, val in param.model_dump().items():
+            if key not in known_keys and val is not None:
+                cell[key] = val
         cells.append(cell)
         idx += 1
 
@@ -274,15 +272,18 @@ async def _execute_cell(
                 "max_tokens": cell["max_tokens"],
                 "top_p": cell["top_p"],
             }
-            # Pass through extended parameters when present
-            for ext_key in ("top_k", "frequency_penalty", "presence_penalty",
-                            "json_mode", "thinking", "thinking_budget",
-                            "seed", "stop_sequences"):
-                if cell.get(ext_key) is not None:
-                    api_kwargs[ext_key] = cell[ext_key]
-            # Pass through any extra params
-            if cell.get("extra") and isinstance(cell["extra"], dict):
-                api_kwargs.update(cell["extra"])
+            # Pass through ALL extra parameters from the cell
+            # (anything beyond the core fields gets forwarded to the provider)
+            skip_keys = {
+                "cell_id", "template_id", "template_file", "param_id",
+                "model_id", "model_name", "provider", "base_url",
+                "api_key_env", "cost_per_million_input", "cost_per_million_output",
+                "repetition", "status",
+                "prompt", "model", "temperature", "max_tokens", "top_p",
+            }
+            for key, val in cell.items():
+                if key not in skip_keys and val is not None:
+                    api_kwargs[key] = val
 
             try:
                 result: CompletionResult = await provider.complete(**api_kwargs)

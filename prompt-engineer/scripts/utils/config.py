@@ -100,29 +100,42 @@ class EvaluationConfig(BaseModel):
 class ParameterSet(BaseModel):
     """A named set of inference parameters to test in the matrix.
 
-    Core parameters (supported by all providers):
-        temperature, max_tokens, top_p
+    Only ``id``, ``temperature``, ``max_tokens``, and ``top_p`` are typed fields.
+    Everything else is accepted as-is and passed through to the provider API.
 
-    Extended parameters (provider-specific, discovered during research):
-        top_k, frequency_penalty, presence_penalty, json_mode,
-        thinking, thinking_budget, seed, stop_sequences
+    This means the research phase can discover ANY parameter for ANY provider
+    and include it in a parameter set without code changes. Examples:
 
-    Any extra fields are passed through to the provider API call.
+        - id: "json-deterministic"
+          temperature: 0.0
+          max_tokens: 512
+          json_mode: true           # OpenAI, Groq
+          seed: 42                  # OpenAI, Groq
+
+        - id: "thinking-mode"
+          temperature: 0.0
+          max_tokens: 4096
+          thinking: true            # Anthropic
+          thinking_budget: 2000     # Anthropic
+
+        - id: "creative-penalized"
+          temperature: 0.8
+          max_tokens: 512
+          top_k: 40                 # Anthropic, Google
+          frequency_penalty: 0.5    # OpenAI, Groq
+          repeat_penalty: 1.2       # Ollama
+
+        - id: "custom-provider-params"
+          temperature: 0.3
+          max_tokens: 512
+          some_future_param: "value" # any param, any provider
     """
+    model_config = {"extra": "allow"}  # Pydantic: accept any field not listed below
+
     id: str
     temperature: float = 0.5
     max_tokens: int = 512
     top_p: float = 1.0
-    # Extended parameters — provider-specific, all optional
-    top_k: int | None = None                    # Anthropic, Google, Ollama
-    frequency_penalty: float | None = None      # OpenAI, Groq
-    presence_penalty: float | None = None       # OpenAI, Groq
-    json_mode: bool | None = None               # OpenAI, Groq (response_format: json_object)
-    thinking: bool | None = None                # Anthropic extended thinking
-    thinking_budget: int | None = None          # Anthropic thinking token budget
-    seed: int | None = None                     # OpenAI, Groq (reproducibility)
-    stop_sequences: list[str] | None = None     # All providers
-    extra: dict[str, Any] | None = None         # Catch-all for any other params
 
 
 class ModelConfig(BaseModel):
