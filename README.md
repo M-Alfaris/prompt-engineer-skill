@@ -1,63 +1,78 @@
+<div align="center">
+
 # Prompt Engineer Skill
 
 ### Stop guessing. Start experimenting. Find the formula.
 
-Most teams test 5-10 prompt variations per week by hand. This skill runs **1,000+ combinations per day** — every template, every model, every parameter setting — and tells you exactly which formula wins, why, and at what cost.
+*The first open-source prompt engineering experimentation framework for the Agent Skills ecosystem.*
+*One goal. Thousands of combinations. One winning formula.*
+
+[![Agent Skills](https://img.shields.io/badge/Agent_Skills-Compatible-8A2BE2)](https://agentskills.io)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-Ready-F97316)](https://claude.ai/code)
+[![Cursor](https://img.shields.io/badge/Cursor-Ready-00D1FF)](https://cursor.com)
+[![OpenAI Codex](https://img.shields.io/badge/OpenAI_Codex-Ready-412991)](https://developers.openai.com/codex)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB.svg)](https://python.org)
+
+<br/>
+
+**Most teams test 5-10 prompt variations per week by hand.**
+**This skill runs 1,000+ combinations per day — every template, every model, every parameter — and tells you exactly which formula wins, why, and at what cost.**
+
+<br/>
+
+</div>
 
 ---
 
-## The Problem
+## Works With 30+ AI Coding Tools
 
-You're building an AI feature. You try a prompt. It kind of works. You tweak it. Better? Worse? Hard to tell. You try a different model. Is it worth the price difference? You adjust the temperature. Did it help or did you just get lucky on that one test?
+Built on the [Agent Skills](https://agentskills.io) open standard — install once, use everywhere.
 
-**This is not engineering. This is guessing.**
+| Tool | Type | Tool | Type |
+|------|------|------|------|
+| **Claude Code** | CLI | **Cursor** | IDE |
+| **VS Code Copilot** | IDE | **GitHub Copilot** | IDE |
+| **OpenAI Codex** | CLI | **Gemini CLI** | CLI |
+| **OpenCode** | CLI | **Kiro (AWS)** | IDE |
+| **Roo Code** | Extension | **Junie (JetBrains)** | IDE |
+| **Amp** | CLI | **Goose (Block)** | CLI |
+| **Mistral Vibe** | CLI | **TRAE (ByteDance)** | CLI |
+| **OpenHands** | Agent | **Qodo** | IDE |
+| **Databricks** | Platform | **Snowflake** | Platform |
+| **Spring AI** | Framework | **Letta** | Framework |
+| **Factory** | CLI | **Laravel Boost** | CLI |
 
-## The Solution
+[Full list of 32 supported tools →](https://agentskills.io)
 
-Give Claude one sentence — your goal. The skill does the rest:
+---
 
+## How It Works
+
+You say: *"Optimize keyword extraction prompts for my search engine"*
+
+The skill:
 1. **Researches** current LLMs (pricing, APIs, capabilities) and prompt techniques via web search
 2. **Builds** a matrix of every combination: prompt templates x parameter sets x models
 3. **Executes** the full matrix against real APIs with budget enforcement
 4. **Scores** every result using LLM-as-judge, programmatic checks, and ground truth comparison
-5. **Reports** the winning formula with cost-performance analysis, ready to deploy
+5. **Reports** the winner with full cost-performance analysis and a production-ready prompt file
 
 **One experiment. Hundreds of combinations. One clear winner.**
 
 ---
 
-## What You Get
-
-From a single prompt like *"optimize keyword extraction for my search engine"*:
-
-| What | Output |
-|------|--------|
-| Best prompt template | Full text, copy-paste ready (`winner.yaml`) |
-| Best model | With latency and cost per call |
-| Best parameters | Temperature, top_p, json_mode, etc. |
-| Full rankings | Every combination ranked by composite score |
-| Cost-performance analysis | Pareto frontier: best quality per dollar |
-| Axis analysis | Which template wins? Which model? Which temperature? |
-| Raw data | Every API call with input, output, tokens, cost, latency (`all_results.jsonl`) |
-| Dashboard data | Structured JSON for visualization (`report_data.json`) |
-
-All results are stored and reusable. The next experiment builds on previous findings — it skips known losers and narrows the search space, reducing cost over time.
-
----
-
 ## Real Results
 
-720 real API calls on Groq. 4 prompt strategies. 3 models. 2 temperature settings. $0.07 total:
+720 real API calls on Groq. 4 prompt strategies. 3 models. 2 temperature settings. **$0.07 total:**
 
-| Rank | Template + Model + Params | Score | Latency | Cost |
-|------|--------------------------|-------|---------|------|
-| 1 | Few-shot + Llama 70B + t=0.0 | **9.31** | 590ms | $0.0006/call |
-| 2 | Few-shot + Llama 8B + t=0.0 | **9.21** | 110ms | $0.00005/call |
-| 3 | Zero-shot + Llama 70B + t=0.0 | **9.07** | 590ms | $0.0006/call |
-| ... | ... | ... | ... | ... |
-| 24 | Zero-shot + GPT-OSS-120B + t=0.3 | **1.05** | 711ms | broken |
+| Rank | Template + Model + Params | Score | Latency | Cost/call |
+|------|--------------------------|-------|---------|-----------|
+| 1 | Few-shot + Llama 70B + t=0.0 | **9.31** | 590ms | $0.0006 |
+| 2 | Few-shot + Llama 8B + t=0.0 | **9.21** | 110ms | $0.00005 |
+| 3 | Zero-shot + Llama 70B + t=0.0 | **9.07** | 590ms | $0.0006 |
 
-The 8B model at 110ms is nearly as good as the 70B at **5x the speed and 12x cheaper**. And GPT-OSS-120B returned empty responses 75% of the time — a critical finding you'd never get from manual testing.
+The 8B model at 110ms is nearly as good as the 70B at **5x the speed and 12x cheaper**.
 
 ---
 
@@ -75,24 +90,24 @@ cp .env.example .env
 # Edit .env: GROQ_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, etc.
 ```
 
-### 2. Use with Claude Code
+### 2. Use with Your AI Tool
 
+**Claude Code:**
 ```bash
 claude skill install ./prompt-engineer
 ```
 
-Then just say what you need:
+**Cursor / VS Code / Any Agent Skills tool:**
+Drop the `prompt-engineer/` folder into your project — the tool picks up `SKILL.md` automatically.
 
+Then just say what you need:
 ```
 > "Test different prompt strategies for customer support chatbot"
 > "Find the cheapest model for sentiment analysis with 85%+ accuracy"
 > "Optimize my content moderation prompts. Use Groq. Budget $5."
-> "I have these prompts that aren't working — find the best variation"
 ```
 
-Claude takes over: researches, plans, builds, executes, evaluates, reports.
-
-### 3. Use Standalone
+### 3. Standalone (without any AI tool)
 
 ```bash
 python -m scripts.run_pipeline --experiment experiments/my-experiment/
@@ -101,88 +116,87 @@ python -m scripts.run_pipeline --experiment experiments/my-experiment/ --dry-run
 
 ---
 
-## What Gets Tested
-
-### The Combinations Matrix
+## The Combinations Matrix
 
 Every experiment is a cross-product of three axes:
 
 ```
 TEMPLATES (how you ask)          MODELS (who you ask)           PARAMETERS (how they answer)
-  zero-shot                        Claude Sonnet                  temperature: 0.0
-  few-shot (3 examples)            GPT-4o                         temperature: 0.3
-  chain-of-thought                 Llama 70B on Groq              temperature: 0.7
-  role + constraints               GPT-4o-mini                    json_mode: true
-  hybrid few-shot + CoT            Gemini Flash                   thinking: true (Claude)
-                                   Any OpenAI-compatible          top_k: 40
+  zero-shot                        Claude Sonnet                  temperature: 0.0, 0.3, 0.7
+  few-shot (3 examples)            GPT-4o                         json_mode: true (if supported)
+  chain-of-thought                 Llama 70B on Groq              thinking: true (Claude only)
+  role + constraints               GPT-4o-mini                    top_k: 40 (if supported)
+  hybrid few-shot + CoT            Gemini Flash                   frequency_penalty: 0.3
+                                   Any model, any provider        seed: 42 (for reproducibility)
 ```
 
-**5 templates x 3 parameter sets x 4 models = 60 combinations**. Each tested against 15-25 diverse inputs with 2-3 repetitions. That's **1,800-4,500 scored data points** from a single experiment.
+**5 templates x 3 parameter sets x 4 models = 60 combinations**, each tested against 15-25 inputs with 2-3 repetitions = **1,800-4,500 scored data points** from a single experiment.
 
-### Evaluation Metrics
+Parameters are applied **per-model** — `json_mode` only goes to models that support it, `thinking` only to Claude, `top_k` only to providers that accept it. No wasted API calls.
+
+---
+
+## Evaluation Metrics
 
 Every result is scored on:
 
-- **Relevance / accuracy** — does the output actually solve the task?
-- **Format compliance** — valid JSON, correct schema, right length?
-- **Consistency** — same input, same quality across runs?
-- **Latency** — milliseconds per call, per model
-- **Cost** — dollars per call, per model, total experiment cost
-- **Token usage** — input and output tokens per call
-- **Custom criteria** — whatever matters for your task
+| Metric | How |
+|--------|-----|
+| **Relevance / accuracy** | LLM-as-judge (subjective quality) |
+| **Format compliance** | Programmatic code checks (deterministic) |
+| **Correctness** | Ground truth comparison (F1, Jaccard, exact match) |
+| **Consistency** | Std deviation across repetitions |
+| **Latency** | Milliseconds per call |
+| **Cost** | Dollars per call, per model |
+| **Token usage** | Input + output tokens per call |
 
-Each criterion uses the best scoring method automatically:
-- Subjective quality → LLM-as-judge (cheap model, different from test models)
-- Format checks → programmatic code (instant, 100% consistent)
-- Correct answers → ground truth comparison (F1, exact match, Jaccard)
+Each criterion uses the best method automatically. Judge model is always the cheapest available — different from the models being tested.
 
 ---
 
 ## Supported Models
 
-Works with **any LLM that has an API**:
+Works with **any LLM that has an API:**
 
-| Provider | Models | How |
-|----------|--------|-----|
-| Anthropic | Claude Haiku, Sonnet, Opus | Native SDK |
-| OpenAI | GPT-4o, GPT-4o-mini, o3, o4-mini | Native SDK |
-| Google | Gemini Flash, Gemini Pro | Native SDK |
-| Groq | Llama, Mixtral, Qwen, Gemma | OpenAI-compatible |
-| Together AI | Llama, Mistral, Qwen | OpenAI-compatible |
-| Fireworks | Llama, Mixtral | OpenAI-compatible |
-| Ollama | Any local model | OpenAI-compatible |
-| vLLM | Any self-hosted model | OpenAI-compatible |
-| Any provider | Any model | If it speaks OpenAI protocol |
+| Provider | How | Example Models |
+|----------|-----|----------------|
+| **Anthropic** | Native SDK | Claude Haiku, Sonnet, Opus |
+| **OpenAI** | Native SDK | GPT-4o, GPT-4o-mini, o3, o4-mini |
+| **Google** | Native SDK | Gemini Flash, Gemini Pro |
+| **Groq** | OpenAI-compatible | Llama, Mixtral, Qwen |
+| **Together AI** | OpenAI-compatible | Llama, Mistral, Qwen |
+| **Fireworks** | OpenAI-compatible | Llama, Mixtral |
+| **OpenRouter** | OpenAI-compatible | 100+ models |
+| **Ollama / vLLM** | OpenAI-compatible | Any local model |
 
-The skill auto-detects which API keys you have and only recommends models you can access.
+Auto-detects which API keys you have. Only recommends models you can access.
 
 ---
 
 ## Supported Input Types
 
-| Input | Pipeline | Preparation |
-|-------|----------|-------------|
-| Text | Standard (automatic) | None |
-| Multi-field text (RAG) | Standard (automatic) | Define template variables |
-| Images + text | Adapted script | Claude encodes images for each provider's format |
-| Audio | Transcribe first | Whisper via Groq/OpenAI, then standard pipeline |
-| Video | Extract frames + transcribe | Key frames + audio transcript |
-| Tool calling | Adapted script | Define tools, Claude writes execution script |
-| Multi-turn conversations | Adapted script | Structure as message arrays |
-| Files (PDF, CSV) | Extract text | PDFplumber/CSV reader during build |
+| Input | How |
+|-------|-----|
+| **Text** | Standard pipeline (automatic) |
+| **Multi-field** (RAG: context + query) | Standard pipeline (automatic) |
+| **Images + text** | Agent writes adapted script per provider format |
+| **Audio** | Transcribed via Whisper first, then standard pipeline |
+| **Tool calling** | Agent writes tool definitions + adapted script |
+| **Multi-turn conversations** | Agent writes adapted script |
+| **Files** (PDF, CSV) | Extracted to text during build phase |
 
 ---
 
 ## How Costs Shrink Over Time
 
-| Experiment | What happens | Cost |
+| Experiment | What Happens | Cost |
 |-----------|-------------|------|
-| First run | Full matrix: 5 templates x 3 params x 4 models | $1.50 |
-| Iteration 1 | Drop 2 losing templates, 1 bad model. Narrow params. | $0.40 |
-| Iteration 2 | Fine-tune winning combo. Test edge cases only. | $0.15 |
-| Future experiments | Start from known winners. Skip proven losers. | $0.10 |
+| First run | Full matrix: 5 templates x 3 params x 4 models | ~$1.50 |
+| Iteration 1 | Drop losers, narrow parameters | ~$0.40 |
+| Iteration 2 | Fine-tune winner, edge cases only | ~$0.15 |
+| Future runs | Start from known winners, skip proven losers | ~$0.10 |
 
-Previous experiment results are stored and reused. The research phase reads prior `summary.yaml` and `report.md` to avoid retesting what's already been measured.
+Previous results are stored and reused. The research phase reads prior experiments to avoid retesting.
 
 ---
 
@@ -190,7 +204,7 @@ Previous experiment results are stored and reused. The research phase reads prio
 
 ```
 prompt-engineer/
-  SKILL.md                    # Orchestrator — Claude reads this first
+  SKILL.md                    # Orchestrator — your AI tool reads this
   references/                 # Phase guides loaded on demand
     phase-research.md         #   Discover LLMs, techniques, domain context
     phase-plan.md             #   Design experiment from research
@@ -198,26 +212,24 @@ prompt-engineer/
     phase-evaluate.md         #   Choose scoring methods per criterion
     phase-report.md           #   Synthesize findings
     input-types.md            #   Vision, audio, tools, conversations
-    prompt-methodologies.md   #   15 techniques (fallback for no web)
   scripts/                    # Deterministic execution
     run_pipeline.py           #   Full pipeline, one command
     generate_matrix.py        #   Build combination matrix
     run_experiment.py         #   Execute API calls (async, budget-enforced)
-    evaluate.py               #   Score results (LLM judge + code + ground truth)
+    evaluate.py               #   Score results (multi-method)
     generate_report.py        #   Dashboard JSON + markdown report
     export_winner.py          #   Production-ready prompt file
     validate.py               #   Pre-flight check
     preview_prompt.py         #   See exact prompt before running
   configs/                    # Defaults + example experiment
   experiments/                # One folder per experiment (all results stored)
-  ui/viewer.html              # Browser-based result viewer
 ```
 
 ---
 
 ## Built With
 
-Built following [Anthropic's official skill-creator guidelines](https://github.com/anthropics/skills). Tested with 1,440+ real API calls across 3 Groq models.
+Built following [Anthropic's skill-creator guidelines](https://github.com/anthropics/skills) and the [Agent Skills open standard](https://agentskills.io). Tested with 1,440+ real API calls.
 
 ## License
 
