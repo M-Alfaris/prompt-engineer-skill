@@ -27,9 +27,10 @@ Thumbs.db
 **/experiments/20*/
 !**/experiments/.gitkeep
 
-# Dev artifacts
+# Dev artifacts (not shipped with the skill)
 **/prompt-engineer-workspace/
 **/benchmarks/
+**/evals/
 *.skill
 
 # Claude
