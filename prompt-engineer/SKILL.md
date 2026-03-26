@@ -9,9 +9,39 @@ Autonomous experimentation pipeline. User provides a goal — the skill research
 
 ---
 
-## Pipeline
+## Where Files Go
 
-**All experiment files are created in the USER'S project directory** (the current working directory), not inside the skill folder. Create `experiments/` in the user's project root.
+**EVERYTHING is created in the user's project directory** (current working directory). Nothing is hidden in the skill folder. The user sees all files in their project:
+
+```
+{user's project}/
+  .env                         # API keys (user creates from .env.example)
+  requirements.txt             # Python deps (copied from skill if not present)
+  experiments/
+    2026-03-25-keyword-extraction/
+      state.yaml               # Pipeline progress
+      research_brief.md        # What was discovered
+      plan.yaml                # What will be tested
+      templates/*.yaml         # The prompt variants
+      data/test_inputs.yaml    # Test data
+      matrix.yaml              # All combinations
+      results/*.jsonl          # Every API call (input + output + tokens + cost)
+      all_results.jsonl        # Consolidated for analysis
+      execution_summary.yaml   # Total cost, calls, errors
+      evaluations/
+        scores.jsonl           # Every score per criterion
+        summary.yaml           # Rankings and axis effects
+      report.md                # Final report
+      report_data.json         # Dashboard data
+      winner.yaml              # Production-ready winning prompt
+      winner.json              # Same, JSON
+```
+
+The scripts live inside the skill folder (read-only). They are called with full paths. All output goes to the user's project.
+
+---
+
+## Pipeline
 
 1. **RESEARCH** — Read `references/phase-research.md`. Web search for LLMs, techniques, domain context. Ingest everything the user provides.
 2. **PLAN** — Read `references/phase-plan.md`. Assemble axes from research. Show cost estimate. **Wait for user approval.**
@@ -23,12 +53,22 @@ Load ONLY the phase file for the current stage. Unload before advancing.
 
 ---
 
-## Execution Mode Decision (critical — make this during BUILD)
+## Setup (first time in a project)
 
-After creating templates and test data, determine which execution path to use:
+Before running any experiment, ensure the user's project has:
+
+1. **requirements.txt** — copy from this skill if not present, then `pip install -r requirements.txt`
+2. **.env** — copy `.env.example` from this skill, user fills in their API keys
+3. **scripts/** — copy the entire `scripts/` folder from this skill into the user's project (so scripts run from the project root)
+
+This only happens once per project. After setup, all commands run from the user's project root.
+
+---
+
+## Execution Mode Decision (during BUILD)
 
 ### Standard mode — use the bundled scripts
-Use when inputs are **text-only or multi-field text** (the vast majority of cases).
+Use when inputs are **text-only or multi-field text** (vast majority of cases).
 
 ```bash
 python scripts/generate_matrix.py --experiment experiments/{id}/
@@ -38,55 +78,50 @@ python scripts/evaluate.py --experiment experiments/{id}/
 python scripts/run_pipeline.py --experiment experiments/{id}/
 ```
 
-The standard scripts handle: any number of LLMs (via OpenAI-compatible API), any text-based templates with Jinja2 variables, budget enforcement, rate limiting, token tracking, LLM-judge + code + ground_truth evaluation.
-
 ### Adapted mode — for non-text inputs
 Use when inputs involve **vision, tool calling, multi-turn conversations, or file processing**.
 
-Read `references/input-types.md` — it has the exact API formats for each provider and input type. Use it to write a custom execution script during BUILD. The custom script outputs the same JSONL format, so EVALUATE and REPORT work unchanged.
-
-**Decision table:**
+Read `references/input-types.md` for the exact API formats. Write a custom execution script in the experiment folder. It outputs the same JSONL format so EVALUATE and REPORT work unchanged.
 
 | Input type | Mode | What to do |
 |-----------|------|------------|
-| Text prompt → text response | Standard | Run the scripts |
-| Multiple text fields (RAG: context + query) | Standard | Templates use multiple `{{ variables }}` |
-| Image + text | Adapted | Read `references/input-types.md` for provider image formats |
-| Tool calling | Adapted | Read `references/input-types.md` for tool definition formats |
-| Multi-turn conversation | Adapted | Read `references/input-types.md` for message array format |
-| File inputs (PDF, CSV) | Standard | Extract file content to text during BUILD, then standard pipeline |
+| Text → text | Standard | Run scripts |
+| Multi-field text (RAG) | Standard | Templates use multiple `{{ variables }}` |
+| Image + text | Adapted | Read `references/input-types.md` |
+| Tool calling | Adapted | Read `references/input-types.md` |
+| Multi-turn conversation | Adapted | Read `references/input-types.md` |
+| File inputs (PDF, CSV) | Standard | Extract text during BUILD |
 
 ---
 
 ## Quick Start
 
-**Required from user:** A goal (one sentence enough)
-**Optional:** Preferred LLMs, prompt types, budget, existing prompts, prior experiment results, test data, domain docs, golden answers
+**Required:** A goal (one sentence enough)
+**Optional:** Preferred LLMs, prompt types, budget, existing prompts, prior results, test data, domain docs
 
 ```
 > "Optimize content moderation prompts for my e-commerce platform."
 > "Find the best prompt for data extraction. Use Claude and GPT-4o. Budget: $15."
 > "Test 5 models on keyword extraction. Use Groq."
-> "I have these prompts that aren't working well — test variations and find the best one."
 ```
 
-1. Create `experiments/YYYY-MM-DD-slug/` in the **user's project root** (current working directory), init `state.yaml`
-2. Copy `requirements.txt` and `.env.example` to the user's project if not already there. Ensure dependencies are installed.
-3. Research autonomously — don't ask the user questions, look things up
+1. Setup: copy scripts/, requirements.txt, .env.example to user's project (first time only)
+2. Create `experiments/YYYY-MM-DD-slug/` in the user's project root, init `state.yaml`
+3. Research autonomously — look things up, don't ask questions
 4. Ingest everything the user provided (prompts, data, docs, prior results)
-4. After PLAN, pause and show: "N templates x N params x N models = N cells, ~$X"
-5. After approval, BUILD → decide execution mode → MATRIX → EXECUTE → EVALUATE → REPORT
-6. Present the winning prompt with scores, cost analysis, and deployment recommendation
+5. After PLAN, pause: "N templates x N params x N models = N cells, ~$X"
+6. After approval, BUILD → MATRIX → EXECUTE → EVALUATE → REPORT automatically
+7. Present the winning prompt with scores, cost analysis, and deployment recommendation
 
 ---
 
-## Bundled Scripts
+## Scripts
 
 ```bash
-# Full pipeline (standard mode)
+# Full pipeline
 python scripts/run_pipeline.py --experiment experiments/{id}/
-python scripts/run_pipeline.py --experiment experiments/{id}/ --dry-run    # cost preview
-python scripts/run_pipeline.py --experiment experiments/{id}/ --from EVALUATE  # resume
+python scripts/run_pipeline.py --experiment experiments/{id}/ --dry-run
+python scripts/run_pipeline.py --experiment experiments/{id}/ --from EVALUATE
 
 # Individual stages
 python scripts/generate_matrix.py --experiment experiments/{id}/
@@ -116,7 +151,7 @@ All scripts support `--json` for structured output.
 - `ground_truth` — compare against expected answers (exact match, F1, Jaccard)
 - `regex` — pattern matching
 
-**Extended parameters** — `json_mode`, `top_k`, `frequency_penalty`, `presence_penalty`, `thinking`, `thinking_budget`, `seed`, `stop_sequences`. Research phase discovers which each model supports.
+**Per-model parameters** — json_mode, top_k, thinking, frequency_penalty, seed, etc. are only sent to models that support them. Research phase discovers each model's supported parameters.
 
 ---
 
@@ -130,18 +165,12 @@ All scripts support `--json` for structured output.
 
 ---
 
-## State, Environment, Output
+## State & Resume
 
-**State:** `experiments/{id}/state.yaml` tracks progress. Resume from `current_stage` if interrupted.
+`experiments/{id}/state.yaml` tracks progress. Resume from `current_stage` if interrupted.
 
-**Environment:** Python 3.10+, `pip install -r requirements.txt`, `.env` with API keys.
+---
 
-**Output:**
-```
-experiments/{id}/
-  state.yaml              research_brief.md       plan.yaml
-  templates/*.yaml        data/test_inputs.yaml   matrix.yaml
-  results/*.jsonl          all_results.jsonl       execution_summary.yaml
-  evaluations/scores.jsonl evaluations/summary.yaml
-  report.md               report_data.json        winner.yaml  winner.json
-```
+## Environment
+
+Python 3.10+. `.env` with API keys. `configs/default_config.yaml` for rate limits and concurrency.
