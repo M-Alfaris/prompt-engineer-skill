@@ -11,7 +11,9 @@ Autonomous experimentation pipeline. User provides a goal — the skill research
 
 ## Pipeline
 
-1. **RESEARCH** — Read `references/phase-research.md`. Web search for LLMs, techniques, domain context. Ingest everything the user provides (existing prompts, prior results, templates, domain docs, test data, golden answers).
+**All experiment files are created in the USER'S project directory** (the current working directory), not inside the skill folder. Create `experiments/` in the user's project root.
+
+1. **RESEARCH** — Read `references/phase-research.md`. Web search for LLMs, techniques, domain context. Ingest everything the user provides.
 2. **PLAN** — Read `references/phase-plan.md`. Assemble axes from research. Show cost estimate. **Wait for user approval.**
 3. **BUILD** — Read `references/phase-build.md`. Create templates + test data. **Decide execution mode** (see below).
 4. **MATRIX → EXECUTE → EVALUATE** — Run scripts or custom code depending on execution mode.
@@ -68,9 +70,10 @@ Read `references/input-types.md` — it has the exact API formats for each provi
 > "I have these prompts that aren't working well — test variations and find the best one."
 ```
 
-1. Create `experiments/YYYY-MM-DD-slug/`, init `state.yaml`
-2. Research autonomously — don't ask the user questions, look things up
-3. Ingest everything the user provided (prompts, data, docs, prior results)
+1. Create `experiments/YYYY-MM-DD-slug/` in the **user's project root** (current working directory), init `state.yaml`
+2. Copy `requirements.txt` and `.env.example` to the user's project if not already there. Ensure dependencies are installed.
+3. Research autonomously — don't ask the user questions, look things up
+4. Ingest everything the user provided (prompts, data, docs, prior results)
 4. After PLAN, pause and show: "N templates x N params x N models = N cells, ~$X"
 5. After approval, BUILD → decide execution mode → MATRIX → EXECUTE → EVALUATE → REPORT
 6. Present the winning prompt with scores, cost analysis, and deployment recommendation
