@@ -77,31 +77,38 @@ def _generate_matrix(config: ExperimentConfig) -> list[dict[str, Any]]:
     cells: list[dict[str, Any]] = []
     idx = 0
 
-    for tpl, param, model in itertools.product(templates, parameters, models):
-        cell_id = f"cell_{idx:04d}_t{tpl.id}_p{param.id}_m{model.id}"
-        cell = {
-            "cell_id": cell_id,
-            "template_id": tpl.id,
-            "template_file": tpl.file,
-            "param_id": param.id,
-            "model_id": model.id,
-            "model_name": model.name,
-            "provider": model.provider,
-            "temperature": param.temperature,
-            "max_tokens": param.max_tokens,
-            "top_p": param.top_p,
-            "base_url": getattr(model, "base_url", None),
-            "api_key_env": getattr(model, "api_key_env", None),
-            "cost_per_million_input": getattr(model, "cost_per_million_input", None),
-            "cost_per_million_output": getattr(model, "cost_per_million_output", None),
-        }
-        # Include ALL extra parameters from the parameter set
-        known_keys = {"id", "temperature", "max_tokens", "top_p"}
-        for key, val in param.model_dump().items():
-            if key not in known_keys and val is not None:
-                cell[key] = val
-        cells.append(cell)
-        idx += 1
+    for tpl in templates:
+        for param in parameters:
+            param_data = param.model_dump()
+            applicable = param_data.pop("applicable_models", None)
+
+            for model in models:
+                if applicable and model.id not in applicable:
+                    continue
+
+                cell_id = f"cell_{idx:04d}_t{tpl.id}_p{param.id}_m{model.id}"
+                cell = {
+                    "cell_id": cell_id,
+                    "template_id": tpl.id,
+                    "template_file": tpl.file,
+                    "param_id": param.id,
+                    "model_id": model.id,
+                    "model_name": model.name,
+                    "provider": model.provider,
+                    "temperature": param.temperature,
+                    "max_tokens": param.max_tokens,
+                    "top_p": param.top_p,
+                    "base_url": getattr(model, "base_url", None),
+                    "api_key_env": getattr(model, "api_key_env", None),
+                    "cost_per_million_input": getattr(model, "cost_per_million_input", None),
+                    "cost_per_million_output": getattr(model, "cost_per_million_output", None),
+                }
+                known_keys = {"id", "temperature", "max_tokens", "top_p", "applicable_models"}
+                for key, val in param_data.items():
+                    if key not in known_keys and val is not None:
+                        cell[key] = val
+                cells.append(cell)
+                idx += 1
 
     return cells
 

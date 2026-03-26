@@ -559,25 +559,70 @@ def _ground_truth_contains(output: str, expected: str) -> float:
     return 10.0 if expected.strip().lower() in output.strip().lower() else 0.0
 
 
-def _ground_truth_f1_token(output: str, expected: str) -> float:
-    """Compute token-level F1 score between output and expected, scaled to 0-10.
+def _extract_items(text: str | list | Any) -> set[str]:
+    """Extract comparable items from a value — handles strings, lists, and JSON.
 
-    Args:
-        output: Model output text.
-        expected: Reference answer.
-
-    Returns:
-        F1 score multiplied by 10, rounded to one decimal place.
+    If text is a list: uses each item as-is (lowercased).
+    If text is a JSON string containing a list or {"keywords": [...]}: parses and extracts items.
+    Otherwise: splits on whitespace as fallback.
     """
-    out_tokens = set(output.lower().split())
-    exp_tokens = set(expected.lower().split())
-    if not exp_tokens:
+    if isinstance(text, list):
+        return {str(item).lower().strip() for item in text if item}
+
+    text_str = str(text).strip()
+
+    # Try parsing as JSON
+    try:
+        parsed = json.loads(text_str)
+        if isinstance(parsed, list):
+            return {str(item).lower().strip() for item in parsed if item}
+        if isinstance(parsed, dict):
+            # Check common keys: keywords, items, results, answers, labels
+            for key in ("keywords", "items", "results", "answers", "labels", "entities", "tags"):
+                if key in parsed and isinstance(parsed[key], list):
+                    return {str(item).lower().strip() for item in parsed[key] if item}
+            # If dict has no list values, use all values
+            return {str(v).lower().strip() for v in parsed.values() if v}
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    # Try finding JSON inside the text
+    match = re.search(r'\{[^{}]*\}', text_str, re.DOTALL)
+    if match:
+        try:
+            parsed = json.loads(match.group())
+            if isinstance(parsed, dict):
+                for key in ("keywords", "items", "results", "answers", "labels", "entities", "tags"):
+                    if key in parsed and isinstance(parsed[key], list):
+                        return {str(item).lower().strip() for item in parsed[key] if item}
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+    # Fallback: split on whitespace
+    return {t for t in text_str.lower().split() if t}
+
+
+def _ground_truth_f1_token(output: str, expected: str) -> float:
+    """Compute F1 score between output and expected, scaled to 0-10.
+
+    Smart about data types: if output/expected contain JSON keyword arrays,
+    compares the actual keyword items instead of raw text tokens.
+    """
+    out_items = _extract_items(output)
+    exp_items = _extract_items(expected)
+    if not exp_items:
         return 10.0
-    common = out_tokens & exp_tokens
+    # Also check for fuzzy containment (e.g., "cloud computing" matches "cloud computing services")
+    common = set()
+    for exp in exp_items:
+        for out in out_items:
+            if exp in out or out in exp:
+                common.add(exp)
+                break
     if not common:
         return 0.0
-    precision = len(common) / len(out_tokens) if out_tokens else 0.0
-    recall = len(common) / len(exp_tokens)
+    precision = len(common) / len(out_items) if out_items else 0.0
+    recall = len(common) / len(exp_items)
     f1 = (
         2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
     )
@@ -585,22 +630,26 @@ def _ground_truth_f1_token(output: str, expected: str) -> float:
 
 
 def _ground_truth_jaccard(output: str, expected: str) -> float:
-    """Compute Jaccard similarity of token sets, scaled to 0-10.
+    """Compute Jaccard similarity between output and expected, scaled to 0-10.
 
-    Args:
-        output: Model output text.
-        expected: Reference answer.
-
-    Returns:
-        Jaccard similarity multiplied by 10, rounded to one decimal place.
+    Smart about data types: if output/expected contain JSON keyword arrays,
+    compares the actual keyword items instead of raw text tokens.
     """
-    out_tokens = set(output.lower().split())
-    exp_tokens = set(expected.lower().split())
-    if not out_tokens and not exp_tokens:
+    out_items = _extract_items(output)
+    exp_items = _extract_items(expected)
+    if not out_items and not exp_items:
         return 10.0
-    union = out_tokens | exp_tokens
-    intersection = out_tokens & exp_tokens
-    return round((len(intersection) / len(union)) * 10, 1) if union else 0.0
+    # Fuzzy matching: count items that overlap (substring containment)
+    matched_out = set()
+    matched_exp = set()
+    for exp in exp_items:
+        for out in out_items:
+            if exp in out or out in exp:
+                matched_out.add(out)
+                matched_exp.add(exp)
+    total_unique = len(out_items | exp_items)
+    total_matched = len(matched_out | matched_exp)
+    return round((total_matched / total_unique) * 10, 1) if total_unique else 0.0
 
 
 # ---------------------------------------------------------------------------

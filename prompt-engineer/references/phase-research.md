@@ -76,17 +76,27 @@ Use `WebSearch` to discover currently available LLMs, their capabilities, pricin
 **For each discovered model, record these fields (required by plan.yaml):**
 
 ```yaml
-- id: "sonnet"                              # short ID for the matrix
-  name: "claude-sonnet-4-20250514"          # exact model name for the API
-  provider: "anthropic"                     # "anthropic" | "google" | "openai" | any OpenAI-compatible
-  base_url: "https://api.openai.com/v1"    # API endpoint (required for non-anthropic/google)
-  api_key_env: "OPENAI_API_KEY"             # env var name for API key (null for local)
-  cost_per_million_input: 3.00                   # $/million input tokens (from web research)
-  cost_per_million_output: 15.00                 # $/million output tokens (from web research)
-  context_window: 200000                    # for reference
-  strengths: "strong reasoning, low cost"   # for reference
-  best_for: "classification, analysis"      # for reference
+- id: "sonnet"
+  name: "claude-sonnet-4-20250514"
+  provider: "anthropic"
+  base_url: null                             # null for native SDK providers
+  api_key_env: "ANTHROPIC_API_KEY"
+  cost_per_million_input: 3.00
+  cost_per_million_output: 15.00
+  context_window: 200000
+  strengths: "strong reasoning, low cost"
+  best_for: "classification, analysis"
+  supported_params:                          # REQUIRED — what this model supports
+    - temperature
+    - max_tokens
+    - top_p
+    - top_k
+    - stop_sequences
+    - thinking
+    - thinking_budget
 ```
+
+**The `supported_params` field is critical.** It tells the PLAN phase which parameters can be tested on this model. Research each model's API docs or search "{model_name} API parameters" to fill this accurately. The PLAN phase uses this to create per-model parameter sets — parameters are NOT applied uniformly across all models.
 
 **IMPORTANT — Provider routing:**
 - `"anthropic"` = uses Anthropic SDK (unique API)
@@ -282,10 +292,28 @@ Measurable criteria. Each must be testable.
 |-------|----------|----------|-------------|---------|----------|---------|----------|
 | ... | ... | ... | ... | ... | ... | ... | ... |
 
-NOTE: The base_url, api_key_env, and pricing columns are REQUIRED — they flow directly into plan.yaml and the execution scripts use them to call APIs and track costs.
+### Per-Model Parameter Support
+
+For EACH recommended model, document exactly which parameters it supports. This drives the PLAN phase to create per-model parameter sets.
+
+```
+Model: llama-3.1-8b-instant (Groq)
+  Supported: temperature, max_tokens, top_p, json_mode, seed, frequency_penalty, presence_penalty, stop
+  NOT supported: thinking, thinking_budget, top_k
+
+Model: claude-sonnet-4-20250514 (Anthropic)
+  Supported: temperature, max_tokens, top_p, top_k, stop_sequences, thinking, thinking_budget
+  NOT supported: json_mode (use tool_use instead), frequency_penalty, presence_penalty, seed
+
+Model: gpt-4o (OpenAI)
+  Supported: temperature, max_tokens, top_p, json_mode, seed, frequency_penalty, presence_penalty, stop
+  NOT supported: thinking, thinking_budget, top_k
+```
+
+This information MUST be in the research brief because the PLAN phase reads it to create model-specific parameter sets. If you skip this, parameters will be applied to models that don't support them, causing API errors.
 
 ### Recommended Models for This Task
-{Pick 3-5 models with one-sentence justification each. If user specified models, list those instead.}
+{Pick 3-5 models. For each: name, one-sentence justification, supported parameters list.}
 
 ---
 

@@ -30,12 +30,42 @@ Use the models from the research brief's "Recommended Models for This Task" sect
 - If research-discovered, include the recommended 3-5 models
 - Each entry needs: id, full model name, provider
 
-### 4. Define Parameter Axis (from Research)
+### 4. Define Parameter Axis (Per-Model, Not Generalized)
 
-Use the parameter strategy from the research brief:
-- Create 2-4 named parameter sets from the recommended ranges
-- Example: "deterministic" (t=0.0), "balanced" (t=0.3), "creative" (t=0.7)
-- Set max_tokens based on expected output size from research brief
+Read the research brief's "Per-Model Parameter Support" section. Create parameter sets that are **compatible with each model** — do not apply parameters a model doesn't support.
+
+**Approach: shared core + model-specific extras**
+
+1. Define **core parameter sets** using only universally-supported params (temperature, max_tokens, top_p):
+   ```yaml
+   - id: "deterministic"
+     temperature: 0.0
+     max_tokens: 512
+   - id: "creative"
+     temperature: 0.7
+     max_tokens: 512
+   ```
+
+2. For each model that supports extra params, create **model-specific parameter sets** that include both core + extras:
+   ```yaml
+   - id: "groq-json-deterministic"
+     temperature: 0.0
+     max_tokens: 512
+     json_mode: true        # Groq supports this
+     seed: 42               # Groq supports this
+     applicable_models: ["llama-8b", "llama-70b"]  # only these
+
+   - id: "anthropic-thinking"
+     temperature: 0.0
+     max_tokens: 2048
+     thinking: true          # only Anthropic
+     thinking_budget: 1024   # only Anthropic
+     applicable_models: ["sonnet"]  # only this
+   ```
+
+3. The matrix generator will cross each parameter set with only its `applicable_models` (if specified) or all models (if not specified). This prevents json_mode from being sent to models that don't support it.
+
+If all models are from the same provider (e.g., all Groq), you can use the same parameter sets for all — just make sure the params are supported by that provider.
 
 ### 5. Design Evaluation Criteria
 
@@ -93,15 +123,30 @@ axes:
       technique: "zero_shot"
     # ... one per recommended technique
   parameters:
+    # Core sets (apply to all models)
     - id: "deterministic"
       temperature: 0.0
       max_tokens: 512
-      top_p: 1.0
-    # ... from research brief parameter strategy
+    - id: "creative"
+      temperature: 0.7
+      max_tokens: 512
+    # Model-specific sets (apply only to listed models)
+    - id: "groq-json"
+      temperature: 0.0
+      max_tokens: 512
+      json_mode: true
+      applicable_models: ["llama-8b", "llama-70b"]  # only models that support json_mode
+    - id: "anthropic-thinking"
+      temperature: 0.0
+      max_tokens: 2048
+      thinking: true
+      thinking_budget: 1024
+      applicable_models: ["sonnet"]  # only Anthropic models
   models:
     - id: "sonnet"
       name: "claude-sonnet-4-20250514"
       provider: "anthropic"
+      supported_params: [temperature, max_tokens, top_p, top_k, thinking, thinking_budget, stop_sequences]
     # ... from research brief recommended models
 
 evaluation:

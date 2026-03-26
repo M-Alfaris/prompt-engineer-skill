@@ -52,35 +52,45 @@ def generate_full_factorial(config: ExperimentConfig) -> list[dict[str, Any]]:
     cells: list[dict[str, Any]] = []
     idx = 0
 
-    for tpl, param, model in itertools.product(templates, parameters, models):
-        for rep in range(1, reps + 1):
-            cell_id = f"cell-{idx:04d}"
-            cell = {
-                "cell_id": cell_id,
-                "template_id": tpl.id,
-                "template_file": tpl.file,
-                "param_id": param.id,
-                "model_id": model.id,
-                "model_name": model.name,
-                "provider": model.provider,
-                "base_url": getattr(model, "base_url", None),
-                "api_key_env": getattr(model, "api_key_env", None),
-                "cost_per_million_input": getattr(model, "cost_per_million_input", None),
-                "cost_per_million_output": getattr(model, "cost_per_million_output", None),
-                "temperature": param.temperature,
-                "max_tokens": param.max_tokens,
-                "top_p": param.top_p,
-                "repetition": rep,
-                "status": "pending",
-            }
-            # Include ALL extra parameters from the parameter set
-            # (Pydantic extra="allow" lets any field through)
-            known_keys = {"id", "temperature", "max_tokens", "top_p"}
-            for key, val in param.model_dump().items():
-                if key not in known_keys and val is not None:
-                    cell[key] = val
-            cells.append(cell)
-            idx += 1
+    for tpl in templates:
+        for param in parameters:
+            # Check if this parameter set has applicable_models restriction
+            param_data = param.model_dump()
+            applicable = param_data.pop("applicable_models", None)
+
+            for model in models:
+                # Skip if this parameter set is restricted to specific models
+                # and this model isn't in the list
+                if applicable and model.id not in applicable:
+                    continue
+
+                for rep in range(1, reps + 1):
+                    cell_id = f"cell-{idx:04d}"
+                    cell = {
+                        "cell_id": cell_id,
+                        "template_id": tpl.id,
+                        "template_file": tpl.file,
+                        "param_id": param.id,
+                        "model_id": model.id,
+                        "model_name": model.name,
+                        "provider": model.provider,
+                        "base_url": getattr(model, "base_url", None),
+                        "api_key_env": getattr(model, "api_key_env", None),
+                        "cost_per_million_input": getattr(model, "cost_per_million_input", None),
+                        "cost_per_million_output": getattr(model, "cost_per_million_output", None),
+                        "temperature": param.temperature,
+                        "max_tokens": param.max_tokens,
+                        "top_p": param.top_p,
+                        "repetition": rep,
+                        "status": "pending",
+                    }
+                    # Include ALL extra parameters from the parameter set
+                    known_keys = {"id", "temperature", "max_tokens", "top_p", "applicable_models"}
+                    for key, val in param_data.items():
+                        if key not in known_keys and val is not None:
+                            cell[key] = val
+                    cells.append(cell)
+                    idx += 1
 
     return cells
 

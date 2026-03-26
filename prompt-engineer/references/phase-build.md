@@ -26,6 +26,8 @@ For each template ID in `plan.yaml axes.templates`:
 
 **Step 3a — Read the technique's prompt setup** from the research brief. The research phase documented how each technique works and what the prompt structure looks like. Use this as the blueprint.
 
+**Step 3a-check — Verify all techniques are covered.** Count the techniques listed in plan.yaml `axes.templates`. Compare to the "Recommended Techniques" in the research brief. Every recommended technique must have a template — do not silently drop techniques. If you need to cut for budget reasons, document which technique was cut and why in the plan.yaml comments.
+
 **Step 3b — Derive the template structure** from the research brief's output requirements:
 - Read "Outputs" section — the template needs to produce output matching this exact format, because the evaluation engine parses it programmatically and mismatches cause scoring failures
 - Read "Constraints" section — every constraint becomes an explicit instruction
@@ -120,10 +122,12 @@ Check `plan.yaml data.source`:
 
 Read the research brief's "Inputs" section (format, examples, edge cases) and "Discovered Domain Context."
 
-Create inputs following this distribution (from plan.yaml `data.distribution`):
-- **Easy cases (~40%):** Clear-cut inputs where the correct output is obvious. Use standard patterns from domain research.
-- **Hard cases (~30%):** Ambiguous inputs that require nuance. Use borderline scenarios found in domain research.
-- **Edge cases (~30%):** Unusual, adversarial, or boundary-testing inputs. Use the specific edge cases listed in the research brief.
+Generate **at least 15 inputs** (15-25 is ideal). Fewer than 15 doesn't give enough statistical power to distinguish models that score within 0.5 points of each other — you'd be making deployment decisions based on noise.
+
+Distribution:
+- **Easy cases (~40% = 6-10 inputs):** Clear-cut inputs where the correct output is obvious.
+- **Hard cases (~30% = 5-7 inputs):** Ambiguous inputs that require nuance.
+- **Edge cases (~30% = 4-6 inputs):** Unusual, adversarial, or boundary-testing inputs.
 
 ```yaml
 inputs:
