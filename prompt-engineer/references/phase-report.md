@@ -53,9 +53,9 @@ Describe what was tested and how. Include:
 
 Produce a ranked table of all cells by mean composite score. Include at minimum:
 
-| Rank | Cell ID | Template | Model | Temp | Mean Score | Std Dev | Cost/Run |
-|---|---|---|---|---|---|---|---|
-| 1 | cell-012 | t02-few-shot | claude-sonnet-4 | 0.3 | 8.74 | 0.31 | $0.0021 |
+| Rank | Cell ID | Template | Model | Temp | Mean Score | Std Dev | Cost/Call | Latency (ms) | TTFT (ms) | Tokens In | Tokens Out |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | cell-012 | t02-few-shot | claude-sonnet-4 | 0.3 | 8.74 | 0.31 | $0.0021 | 1240.5 | 285.3 | 312 | 156 |
 | ... | | | | | | | |
 
 Flag any cells with std dev > 1.5 as unstable.
@@ -68,7 +68,7 @@ Report the best value for each individual axis:
 
 **Best Temperature:** State which temperature setting produced the highest mean score. Note if there is a trade-off between score and stability (std dev).
 
-**Best Model:** State which model produced the highest mean score. State which model produced the best score per dollar.
+**Best Model:** State which model produced the highest mean score. State which model produced the best score per dollar. State which model had the lowest latency and TTFT.
 
 ### Section 5: Interaction Effects
 
@@ -80,11 +80,11 @@ If no significant interaction effects are found, state that explicitly.
 
 Identify the Pareto-efficient combinations: those where no other combination is both cheaper and higher-scoring. Present these as a short table:
 
-| Combination | Mean Score | Cost/Run | Notes |
-|---|---|---|---|
-| t01 + m01 + p01 | 7.2 | $0.0004 | Best budget option |
-| t02 + m02 + p02 | 8.7 | $0.0021 | Best balanced option |
-| t03 + m03 + p02 | 9.1 | $0.0089 | Best quality, premium cost |
+| Combination | Mean Score | Cost/Call | Latency (ms) | TTFT (ms) | Tokens In | Tokens Out | Notes |
+|---|---|---|---|---|---|---|---|
+| t01 + m01 + p01 | 7.2 | $0.0004 | 320.1 | 78.2 | 180 | 95 | Best budget option |
+| t02 + m02 + p02 | 8.7 | $0.0021 | 1240.5 | 285.3 | 312 | 156 | Best balanced option |
+| t03 + m03 + p02 | 9.1 | $0.0089 | 2810.3 | 520.7 | 520 | 280 | Best quality, premium cost |
 
 Recommend which Pareto point to use based on the budget constraint in plan.yaml.
 

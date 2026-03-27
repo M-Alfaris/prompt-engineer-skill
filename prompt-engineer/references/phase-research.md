@@ -113,7 +113,7 @@ Use `WebSearch` to discover currently available LLMs, their capabilities, pricin
 
 Record the base_url, API key env var name, and pricing per million tokens. These flow directly into plan.yaml and the execution engine uses them.
 
-**Aim for 4-8 models across 2-3 tiers:**
+**Discover as many viable models as possible across tiers. More models = more signal. The user's budget determines how many make it into the plan — your job is to surface options, not pre-filter:**
 - Budget tier (fast, cheap): e.g., Haiku, GPT-4o-mini, Gemini Flash
 - Balanced tier (good quality/cost): e.g., Sonnet, GPT-4o, Gemini Pro
 - Premium tier (best quality): e.g., Opus, o3, o4-mini
@@ -313,13 +313,13 @@ Model: gpt-4o (OpenAI)
 This information MUST be in the research brief because the PLAN phase reads it to create model-specific parameter sets. If you skip this, parameters will be applied to models that don't support them, causing API errors.
 
 ### Recommended Models for This Task
-{Pick 3-5 models. For each: name, one-sentence justification, supported parameters list.}
+{Recommend all models worth testing. Include every model the user has API access for that could plausibly perform this task. The budget determines how many run — don't pre-limit here.}
 
 ---
 
 ## Discovered Prompt Techniques
 
-For each technique (list 5-8):
+For each technique discovered (list all that are relevant):
 
 ### {Technique Name}
 - **How it works:** {description}
@@ -329,7 +329,7 @@ For each technique (list 5-8):
 - **Source:** {URL}
 
 ### Recommended Techniques for This Task
-{Pick 4-6 techniques to test in the matrix, with one-sentence justification each. If user specified techniques, include those plus any additional discovered ones.}
+{Recommend all techniques worth testing for this task, with one-sentence justification each. Include user-specified techniques plus all research-discovered ones that are relevant. More techniques = more signal — the budget determines how many run.}
 
 ---
 

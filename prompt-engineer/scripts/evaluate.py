@@ -940,10 +940,16 @@ async def _score_record(
         "template_id": result_record.get("template_id", ""),
         "param_id": result_record.get("param_id", ""),
         "model": result_record.get("model", ""),
+        "model_id": result_record.get("model_id", result_record.get("model", "")),
         "provider": result_record.get("provider", ""),
         "scores": scores,
         "composite_score": composite,
         "judge_reasoning": " | ".join(reasoning_parts),
+        "cost_usd": result_record.get("cost_usd", 0.0),
+        "latency_ms": result_record.get("latency_ms", 0.0),
+        "ttft_ms": result_record.get("ttft_ms"),
+        "tokens_in": result_record.get("tokens_in", 0),
+        "tokens_out": result_record.get("tokens_out", 0),
         "evaluated_at": datetime.now(timezone.utc).isoformat(),
     }
 

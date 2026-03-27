@@ -333,6 +333,7 @@ async def _execute_cell(
         "tokens_in": result.input_tokens,
         "tokens_out": result.output_tokens,
         "latency_ms": latency_ms,
+        "ttft_ms": result.ttft_ms,
         "cost_usd": cost,
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

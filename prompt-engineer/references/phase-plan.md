@@ -36,15 +36,28 @@ Read the research brief's "Per-Model Parameter Support" section. Create paramete
 
 **Approach: shared core + model-specific extras**
 
-1. Define **core parameter sets** using only universally-supported params (temperature, max_tokens, top_p):
+1. Define **core parameter sets** using universally-supported params (temperature, max_tokens, top_p). Explore the parameter space — don't just pick two extremes:
    ```yaml
    - id: "deterministic"
      temperature: 0.0
      max_tokens: 512
+   - id: "low-creative"
+     temperature: 0.3
+     max_tokens: 512
+   - id: "mid-creative"
+     temperature: 0.5
+     max_tokens: 512
    - id: "creative"
      temperature: 0.7
      max_tokens: 512
+   - id: "high-creative"
+     temperature: 1.0
+     max_tokens: 512
+   - id: "deterministic-long"
+     temperature: 0.0
+     max_tokens: 1024
    ```
+   How many to include depends on the budget — use as many as the budget allows.
 
 2. For each model that supports extra params, create **model-specific parameter sets** that include both core + extras:
    ```yaml
@@ -96,11 +109,21 @@ This is a rough estimate for the user approval checkpoint. The script will compu
 
 **Don't forget to include judge model cost.** The LLM judge makes 1 API call per result per LLM-judge criterion. If you have 720 results and 3 LLM-judge criteria, that's 2,160 extra API calls. Use a cheap, fast model as judge to minimize this overhead.
 
-**If total_cost > budget:**
-- First try: reduce repetitions to 2
-- Then try: drop the most expensive model
-- Then try: switch to fractional factorial strategy
-- Document what was cut and why
+**Budget is a resource to USE, not a ceiling to hide from.** The goal is to maximize experimental signal within the user's budget. More combinations = more insight into what works and why.
+
+**If total_cost < budget:** Expand the experiment to use the available budget. Consider:
+- Adding more temperature values (e.g., 0.0, 0.3, 0.5, 0.7, 1.0 instead of just 0.0 and 0.7)
+- Adding parameter combinations (json_mode on/off, different max_tokens values, top_p variations)
+- Including more models from the research brief
+- Including more template techniques from the research brief
+- Increasing repetitions for statistical confidence
+- Keep expanding until estimated cost approaches the budget
+
+**If total_cost > budget:** Present the full experiment to the user with the cost, and suggest what could be cut to fit. Let the user decide what to sacrifice — don't pre-cut on their behalf. Offer options like:
+- Reduce repetitions
+- Drop specific models (name which ones and why they're the weakest candidates)
+- Switch to fractional factorial strategy
+- The user may also choose to increase their budget
 
 ### 7. Write plan.yaml
 
@@ -123,25 +146,39 @@ axes:
       technique: "zero_shot"
     # ... one per recommended technique
   parameters:
-    # Core sets (apply to all models)
+    # Core sets (apply to all models) — explore the space, don't just pick extremes
     - id: "deterministic"
       temperature: 0.0
+      max_tokens: 512
+    - id: "low-creative"
+      temperature: 0.3
       max_tokens: 512
     - id: "creative"
       temperature: 0.7
       max_tokens: 512
+    - id: "high-creative"
+      temperature: 1.0
+      max_tokens: 512
+    - id: "deterministic-long"
+      temperature: 0.0
+      max_tokens: 1024
     # Model-specific sets (apply only to listed models)
     - id: "groq-json"
       temperature: 0.0
       max_tokens: 512
       json_mode: true
-      applicable_models: ["llama-8b", "llama-70b"]  # only models that support json_mode
+      applicable_models: ["llama-8b", "llama-70b"]
+    - id: "groq-json-creative"
+      temperature: 0.5
+      max_tokens: 512
+      json_mode: true
+      applicable_models: ["llama-8b", "llama-70b"]
     - id: "anthropic-thinking"
       temperature: 0.0
       max_tokens: 2048
       thinking: true
       thinking_budget: 1024
-      applicable_models: ["sonnet"]  # only Anthropic models
+      applicable_models: ["sonnet"]
   models:
     - id: "sonnet"
       name: "claude-sonnet-4-20250514"
@@ -187,8 +224,8 @@ Before saving, verify:
 - All template IDs are unique
 - All model IDs are unique
 - Criterion weights sum to 1.0
-- Estimated cost <= budget.max_cost_usd
-- strategy matches matrix size (full if <500 cells, fractional if 500-5000)
+- Estimated cost is presented to the user for approval (they decide if it's acceptable)
+- Strategy is appropriate for the matrix size (full factorial when feasible, fractional for very large matrices)
 
 ## Output
 
@@ -196,6 +233,6 @@ Before saving, verify:
 
 ## Handoff
 
-Summarize the plan: "{N} templates x {N} param sets x {N} models = {N} cells x {N} inputs x {N} reps = {total} API calls. Estimated cost: ${X}. Strategy: {full/fractional}."
+Summarize the plan: "{N} templates x {N} param sets x {N} models = {N} cells x {N} inputs x {N} reps = {total} API calls. Estimated cost: ${X} of ${budget} budget ({percent}% utilization). Strategy: {full/fractional}."
 
 Pause here for user confirmation. This is the only mandatory checkpoint before execution.
