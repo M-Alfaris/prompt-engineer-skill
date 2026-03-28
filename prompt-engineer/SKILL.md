@@ -97,12 +97,14 @@ Read `references/input-types.md` for the exact API formats. Write a custom execu
 ## Quick Start
 
 **Required:** A goal (one sentence enough)
-**Optional:** Preferred LLMs, prompt types, budget, existing prompts, prior results, test data, domain docs
+**Optional:** Preferred LLMs, prompt types, budget, existing prompts or template folder, prior results, test data, domain docs
 
 ```
 > "Optimize content moderation prompts for my e-commerce platform."
 > "Find the best prompt for data extraction. Use Claude and GPT-4o. Budget: $15."
 > "Test 5 models on keyword extraction. Use Groq."
+> "I have templates in prompts/ — find the best variations. Budget: $20."
+> "Classify these images into categories. Use vision models."
 ```
 
 1. Setup: copy scripts/, requirements.txt, .env.example to user's project (first time only)

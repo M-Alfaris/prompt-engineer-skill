@@ -58,7 +58,7 @@ variables:
 - For few-shot templates: generate examples that match the task domain using research brief's input/output examples
 - For CoT templates: include step-by-step reasoning instructions specific to the task type
 - For role templates: derive the role from the domain context in the research brief
-- If user provided existing templates: include them as-is alongside new ones
+- If user provided existing templates: follow the approach decided in the research brief's "Current State" section (baseline, variations, extract-and-rebuild, few-shot source, or a combination)
 - If user provided domain docs: reference key constraints/rules from those docs in templates
 
 ### 3d. Handle Complex Input Types

@@ -15,7 +15,7 @@ Extract everything the user provides. Do NOT ask for things they didn't mention 
 - **Existing prompts** (optional): Analyze strengths, weaknesses, technique used. Use as a baseline template.
 - **Test data** (optional): Use if provided. Otherwise generate in BUILD phase.
 - **Previous experiment results** (optional): If user shares a prior report.md, summary.yaml, or scores.jsonl — read them. Extract: which combos won, which failed, what the scores were. Use this to narrow the search space (don't re-test known losers).
-- **Existing templates** (optional): If user provides .yaml template files, ingest them as-is. Add them to the template axis alongside new ones.
+- **Existing templates** (optional): If user provides .yaml template files or a folder of templates. See Step 5 for how to handle them.
 - **Domain docs** (optional): API docs, style guides, company policies, schemas. Include in the research brief for the BUILD phase to reference when writing templates.
 - **Example outputs** (optional): If user shares good/bad examples, use them to calibrate evaluation criteria and few-shot examples.
 - **Golden answers dataset** (optional): If user provides a Q&A dataset with correct answers, route evaluation to `ground_truth` method.
@@ -224,13 +224,25 @@ parameters:
     frequency_penalty: 0.3
 ```
 
-### 5. Analyze Existing Prompts (if provided)
+### 5. Analyze Existing Prompts and Templates (if provided)
 
-If the user shared existing prompts:
-- Identify what technique(s) the prompt uses
+If the user shared existing prompts, template files, or a folder of templates:
+
+**First, analyze each one:**
+- Identify what technique(s) each prompt/template uses
 - Assess strengths and weaknesses
 - Flag injection risks, ambiguous instructions, missing constraints
-- Note what to preserve vs what to experiment with
+- Note what works well vs what could be improved
+
+**Then, decide how to use them.** Choose the approach that best fits the user's goal and the quality of the existing templates:
+
+- **Use as-is for baseline comparison** — include them unchanged in the template axis alongside new ones. Best when: the user wants to benchmark their current prompts against new approaches.
+- **Generate variations** — use the existing templates as starting points and create new templates that modify, combine, or extend their techniques. Best when: the user has good templates and wants to systematically explore nearby improvements.
+- **Extract patterns and rebuild** — analyze the techniques and structural patterns in the existing templates, then build entirely new templates that incorporate those patterns alongside research-discovered techniques. Best when: the existing templates have good domain knowledge but use outdated or suboptimal prompt structures.
+- **Use as few-shot source material** — mine the existing templates for domain-specific examples, constraints, and formatting patterns to embed in new templates. Best when: the templates contain valuable domain context that new templates should inherit.
+- **Combine approaches** — use some templates as-is for baseline, generate variations of the best ones, and build fresh templates from research. Best when: the user has a mixed set of templates with varying quality.
+
+Document your choice and reasoning in the research brief under "Current State".
 
 ### 6. Produce the Research Brief
 
