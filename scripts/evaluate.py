@@ -947,6 +947,7 @@ async def _score_record(
         "judge_reasoning": " | ".join(reasoning_parts),
         "cost_usd": result_record.get("cost_usd", 0.0),
         "latency_ms": result_record.get("latency_ms", 0.0),
+        "ttft_ms": result_record.get("ttft_ms"),
         "tokens_in": result_record.get("tokens_in", 0),
         "tokens_out": result_record.get("tokens_out", 0),
         "evaluated_at": datetime.now(timezone.utc).isoformat(),

@@ -106,7 +106,7 @@ def _detect_criterion_columns(df: pd.DataFrame) -> list[str]:
     excluded = {
         "cell_id", "template_id", "model", "model_id", "param_id",
         "input_id", "repetition", "composite_score", "judge_reasoning",
-        "cost_usd", "latency_ms", "input_tokens", "output_tokens",
+        "cost_usd", "latency_ms", "ttft_ms", "input_tokens", "output_tokens",
     }
     return [
         col for col in df.columns
@@ -147,7 +147,7 @@ def _build_rankings(df: pd.DataFrame, plan_raw: dict[str, Any]) -> list[dict[str
 
     # Aggregate score, cost, latency, and tokens per cell
     agg_cols = {"composite_score": ["mean", "std", "count"]}
-    for extra_col in ("cost_usd", "latency_ms", "tokens_in", "tokens_out"):
+    for extra_col in ("cost_usd", "latency_ms", "ttft_ms", "tokens_in", "tokens_out"):
         if extra_col in df.columns:
             agg_cols[extra_col] = "mean"
 
@@ -163,6 +163,7 @@ def _build_rankings(df: pd.DataFrame, plan_raw: dict[str, Any]) -> list[dict[str
         "composite_score_count": "count",
         "cost_usd_mean": "mean_cost_usd",
         "latency_ms_mean": "mean_latency_ms",
+        "ttft_ms_mean": "mean_ttft_ms",
         "tokens_in_mean": "mean_tokens_in",
         "tokens_out_mean": "mean_tokens_out",
     })
@@ -188,6 +189,8 @@ def _build_rankings(df: pd.DataFrame, plan_raw: dict[str, Any]) -> list[dict[str
             entry["mean_cost_usd"] = round(float(row["mean_cost_usd"]), 6)
         if "mean_latency_ms" in row:
             entry["mean_latency_ms"] = round(float(row["mean_latency_ms"]), 1)
+        if "mean_ttft_ms" in row and not pd.isna(row["mean_ttft_ms"]):
+            entry["mean_ttft_ms"] = round(float(row["mean_ttft_ms"]), 1)
         if "mean_tokens_in" in row:
             entry["mean_tokens_in"] = round(float(row["mean_tokens_in"]), 0)
         if "mean_tokens_out" in row:
@@ -224,12 +227,14 @@ def _build_axis_analysis(
     for axis_label, col in axis_map.items():
         if col not in df.columns:
             continue
-        # Aggregate score plus optional cost and latency
+        # Aggregate score plus optional cost, latency, and TTFT
         agg_dict: dict[str, Any] = {"composite_score": "mean"}
         if "cost_usd" in df.columns:
             agg_dict["cost_usd"] = "mean"
         if "latency_ms" in df.columns:
             agg_dict["latency_ms"] = "mean"
+        if "ttft_ms" in df.columns:
+            agg_dict["ttft_ms"] = "mean"
 
         level_agg = (
             df.groupby(col)
@@ -247,6 +252,8 @@ def _build_axis_analysis(
                 entry["mean_cost_usd"] = round(float(row["cost_usd"]), 6)
             if "latency_ms" in row:
                 entry["mean_latency_ms"] = round(float(row["latency_ms"]), 1)
+            if "ttft_ms" in row and not pd.isna(row["ttft_ms"]):
+                entry["mean_ttft_ms"] = round(float(row["ttft_ms"]), 1)
             axis_rows.append(entry)
         result[axis_label] = axis_rows
 
@@ -280,8 +287,11 @@ def _build_cost_performance(
     if "cost_usd" in df.columns and "cell_id" in df.columns:
         cost_series = df.groupby("cell_id")["cost_usd"].mean()
         cost_by_cell = cost_series.to_dict()
+    ttft_by_cell: dict[str, float] = {}
     if "latency_ms" in df.columns and "cell_id" in df.columns:
         latency_by_cell = df.groupby("cell_id")["latency_ms"].mean().to_dict()
+    if "ttft_ms" in df.columns and "cell_id" in df.columns:
+        ttft_by_cell = df.groupby("cell_id")["ttft_ms"].mean().to_dict()
     if "tokens_in" in df.columns and "cell_id" in df.columns:
         tokens_in_by_cell = df.groupby("cell_id")["tokens_in"].mean().to_dict()
     if "tokens_out" in df.columns and "cell_id" in df.columns:
@@ -299,6 +309,10 @@ def _build_cost_performance(
         }
         if latency_by_cell:
             row_data["latency_ms"] = round(float(latency_by_cell.get(cell_id, 0.0)), 1)
+        if ttft_by_cell:
+            ttft_val = ttft_by_cell.get(cell_id)
+            if ttft_val is not None and not (isinstance(ttft_val, float) and pd.isna(ttft_val)):
+                row_data["ttft_ms"] = round(float(ttft_val), 1)
         if tokens_in_by_cell:
             row_data["tokens_in"] = round(float(tokens_in_by_cell.get(cell_id, 0.0)), 0)
         if tokens_out_by_cell:
@@ -480,6 +494,7 @@ def _md_rankings_table(rankings: list[dict[str, Any]], top_n: int = 15) -> str:
     # Detect which optional columns are present (only show if data exists)
     has_cost = any("mean_cost_usd" in r for r in rankings[:top_n])
     has_latency = any("mean_latency_ms" in r for r in rankings[:top_n])
+    has_ttft = any("mean_ttft_ms" in r for r in rankings[:top_n])
     has_tokens = any("mean_tokens_in" in r for r in rankings[:top_n])
 
     header = "| Rank | Cell ID | Template | Model | Params | Mean Score | Std | N"
@@ -490,6 +505,9 @@ def _md_rankings_table(rankings: list[dict[str, Any]], top_n: int = 15) -> str:
     if has_latency:
         header += " | Latency (ms)"
         separator += "|--------------"
+    if has_ttft:
+        header += " | TTFT (ms)"
+        separator += "|----------"
     if has_tokens:
         header += " | Tokens In | Tokens Out"
         separator += "|-----------|----------"
@@ -514,6 +532,9 @@ def _md_rankings_table(rankings: list[dict[str, Any]], top_n: int = 15) -> str:
         if has_latency:
             latency = row.get("mean_latency_ms", 0.0)
             line += f" | {latency:.1f}"
+        if has_ttft:
+            ttft = row.get("mean_ttft_ms")
+            line += f" | {ttft:.1f}" if ttft is not None else " | —"
         if has_tokens:
             tokens_in = row.get("mean_tokens_in", 0)
             tokens_out = row.get("mean_tokens_out", 0)
@@ -530,6 +551,8 @@ def _md_axis_table(axis_data: list[dict[str, Any]]) -> str:
 
     has_cost = any("mean_cost_usd" in r for r in axis_data)
     has_latency = any("mean_latency_ms" in r for r in axis_data)
+    has_ttft = any("mean_ttft_ms" in r for r in axis_data)
+
     header = "| Level | Mean Score"
     separator = "|-------|----------"
     if has_cost:
@@ -538,6 +561,9 @@ def _md_axis_table(axis_data: list[dict[str, Any]]) -> str:
     if has_latency:
         header += " | Mean Latency (ms)"
         separator += "|------------------"
+    if has_ttft:
+        header += " | Mean TTFT (ms)"
+        separator += "|---------------"
     header += " |"
     separator += "|"
 
@@ -548,6 +574,9 @@ def _md_axis_table(axis_data: list[dict[str, Any]]) -> str:
             line += f" | ${row.get('mean_cost_usd', 0.0):.6f}"
         if has_latency:
             line += f" | {row.get('mean_latency_ms', 0.0):.1f}"
+        if has_ttft:
+            ttft = row.get("mean_ttft_ms")
+            line += f" | {ttft:.1f}" if ttft is not None else " | —"
         line += " |"
         lines.append(line)
     return "\n".join(lines) + "\n"
@@ -559,6 +588,7 @@ def _md_cost_performance_table(cost_perf: list[dict[str, Any]]) -> str:
         return "_No cost data available._\n"
 
     has_latency = any("latency_ms" in r for r in cost_perf)
+    has_ttft = any("ttft_ms" in r for r in cost_perf)
     has_tokens = any("tokens_in" in r for r in cost_perf)
 
     header = "| Cell ID | Mean Score | Cost/Call (USD)"
@@ -566,6 +596,9 @@ def _md_cost_performance_table(cost_perf: list[dict[str, Any]]) -> str:
     if has_latency:
         header += " | Latency (ms)"
         separator += "|--------------"
+    if has_ttft:
+        header += " | TTFT (ms)"
+        separator += "|----------"
     if has_tokens:
         header += " | Tokens In | Tokens Out"
         separator += "|-----------|----------"
@@ -582,6 +615,9 @@ def _md_cost_performance_table(cost_perf: list[dict[str, Any]]) -> str:
         )
         if has_latency:
             line += f" | {row.get('latency_ms', 0.0):.1f}"
+        if has_ttft:
+            ttft = row.get("ttft_ms")
+            line += f" | {ttft:.1f}" if ttft is not None else " | —"
         if has_tokens:
             line += f" | {row.get('tokens_in', 0):.0f} | {row.get('tokens_out', 0):.0f}"
         line += f" | {pareto_marker} |"

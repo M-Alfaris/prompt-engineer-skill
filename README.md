@@ -36,7 +36,7 @@
 
 **Four evaluation methods, not just vibes.** LLM-as-judge for subjective quality, programmatic code checks for format compliance, ground truth comparison (F1, Jaccard, exact match) for accuracy, and consistency analysis across repetitions.
 
-**Cost is a first-class metric.** Every API call logs token count, latency, TTFT, and cost. Budget enforcement stops execution at your ceiling. Pareto analysis shows you the cheapest option at every quality level.
+**Cost is a first-class metric.** Every API call logs token count, latency, and cost. Budget enforcement stops execution at your ceiling. Pareto analysis shows you the cheapest option at every quality level.
 
 ---
 
