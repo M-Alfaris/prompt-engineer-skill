@@ -33,5 +33,11 @@ Thumbs.db
 **/evals/
 *.skill
 
+# Runtime files copied to project root by the skill (not part of repo)
+/scripts/
+/requirements.txt
+/docs/assets/*.cast
+/docs/assets/*.gif
+
 # Claude
 .claude/

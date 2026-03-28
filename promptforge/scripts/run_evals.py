@@ -853,7 +853,7 @@ def _print_rich(summary: EvalSummary, category_filter: str | None) -> None:
     from rich import box
 
     console = Console()
-    title = "Prompt-Engineer Skill Evals"
+    title = "PromptForge Evals"
     if category_filter:
         title += f" — category: {category_filter}"
 
@@ -883,7 +883,7 @@ def _print_rich(summary: EvalSummary, category_filter: str | None) -> None:
 
 
 def _print_plain(summary: EvalSummary, category_filter: str | None) -> None:
-    header = "Prompt-Engineer Skill Evals"
+    header = "PromptForge Evals"
     if category_filter:
         header += f" [category: {category_filter}]"
     print(f"\n{header}")

@@ -258,7 +258,7 @@ def _compare_benchmarks(
 def _print_benchmark_rich(result: dict[str, Any], diff: dict[str, Any] | None) -> None:
     console = Console()
 
-    console.print(f"\n[bold cyan]Prompt-Engineer Skill Benchmark[/bold cyan]")
+    console.print(f"\n[bold cyan]PromptForge Benchmark[/bold cyan]")
     console.print(f"Timestamp:     {result['timestamp']}")
     console.print(f"Skill version: {result['skill_version']}")
     if result.get("category_filter"):
@@ -358,7 +358,7 @@ def _print_benchmark_rich(result: dict[str, Any], diff: dict[str, Any] | None) -
 
 
 def _print_benchmark_plain(result: dict[str, Any], diff: dict[str, Any] | None) -> None:
-    print("\nPrompt-Engineer Skill Benchmark")
+    print("\nPromptForge Benchmark")
     print(f"Timestamp:     {result['timestamp']}")
     print(f"Skill version: {result['skill_version']}")
     if result.get("category_filter"):
