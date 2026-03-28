@@ -335,18 +335,10 @@ class AnthropicProvider:
                 api_kwargs[key] = val
 
         t0 = time.perf_counter()
-        ttft_ms: float | None = None
-        text_parts: list[str] = []
-
-        async with self._client.messages.stream(**api_kwargs) as stream:
-            async for text_chunk in stream.text_stream:
-                if ttft_ms is None:
-                    ttft_ms = (time.perf_counter() - t0) * 1000
-                text_parts.append(text_chunk)
-
+        response = await _with_retry(self._client.messages.create, **api_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000
-        response = await stream.get_final_message()
-        text = "".join(text_parts)
+
+        text = response.content[0].text
         usage = response.usage
         return CompletionResult(
             text=text,
@@ -354,7 +346,6 @@ class AnthropicProvider:
             output_tokens=usage.output_tokens,
             model=response.model,
             latency_ms=latency_ms,
-            ttft_ms=ttft_ms,
         )
 
 
@@ -447,32 +438,22 @@ class GoogleProvider:
         contents = contents_list
 
         t0 = time.perf_counter()
-        ttft_ms: float | None = None
-        text_chunks: list[str] = []
-        final_usage = None
-
-        async for chunk in await _with_retry(
-            self._client.aio.models.generate_content_stream,
+        response = await _with_retry(
+            self._client.aio.models.generate_content,
             model=model,
             contents=contents,
             **config_kwargs,
-        ):
-            chunk_text = chunk.text or ""
-            if chunk_text and ttft_ms is None:
-                ttft_ms = (time.perf_counter() - t0) * 1000
-            text_chunks.append(chunk_text)
-            if chunk.usage_metadata:
-                final_usage = chunk.usage_metadata
-
+        )
         latency_ms = (time.perf_counter() - t0) * 1000
 
+        text = response.text or ""
+        usage = response.usage_metadata
         return CompletionResult(
-            text="".join(text_chunks),
-            input_tokens=final_usage.prompt_token_count or 0 if final_usage else 0,
-            output_tokens=final_usage.candidates_token_count or 0 if final_usage else 0,
+            text=text,
+            input_tokens=usage.prompt_token_count or 0,
+            output_tokens=usage.candidates_token_count or 0,
             model=model,
             latency_ms=latency_ms,
-            ttft_ms=ttft_ms,
         )
 
 
@@ -575,38 +556,20 @@ class OpenAICompatibleProvider:
                 api_kwargs[key] = val
 
         t0 = time.perf_counter()
-        ttft_ms: float | None = None
-        text_parts: list[str] = []
-        final_model = ""
-        input_tokens = 0
-        output_tokens = 0
-
-        api_kwargs["stream"] = True
-        api_kwargs["stream_options"] = {"include_usage": True}
-        stream = await _with_retry(
+        response = await _with_retry(
             self._client.chat.completions.create,
             **api_kwargs,
         )
-        async for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content:
-                if ttft_ms is None:
-                    ttft_ms = (time.perf_counter() - t0) * 1000
-                text_parts.append(chunk.choices[0].delta.content)
-            if chunk.model:
-                final_model = chunk.model
-            if chunk.usage:
-                input_tokens = chunk.usage.prompt_tokens or 0
-                output_tokens = chunk.usage.completion_tokens or 0
-
         latency_ms = (time.perf_counter() - t0) * 1000
 
+        choice = response.choices[0]
+        usage = response.usage
         return CompletionResult(
-            text="".join(text_parts),
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            model=final_model or effective_model,
+            text=choice.message.content or "",
+            input_tokens=usage.prompt_tokens if usage else 0,
+            output_tokens=usage.completion_tokens if usage else 0,
+            model=response.model,
             latency_ms=latency_ms,
-            ttft_ms=ttft_ms,
         )
 
 
