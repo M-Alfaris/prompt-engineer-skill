@@ -1,0 +1,79 @@
+{
+  "skill_name": "prompt-engineer",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "ok so we have this customer support chatbot and the responses are kind of hit or miss. I want to find the best prompt setup — maybe test few-shot vs zero-shot vs chain-of-thought across Claude Sonnet and GPT-4o. budget is like $10",
+      "expected_output": "Creates experiment directory, produces research_brief.md with discovered models and techniques, generates plan.yaml with 3+ templates and 2 models, pauses for user confirmation with cost estimate",
+      "files": [],
+      "assertions": [
+        {"text": "Creates experiments/ directory with date-slug naming", "type": "structural"},
+        {"text": "research_brief.md contains Discovered LLM Models section with pricing", "type": "content"},
+        {"text": "research_brief.md contains Discovered Prompt Techniques section with at least 4 techniques", "type": "content"},
+        {"text": "plan.yaml exists with axes.templates, axes.parameters, axes.models", "type": "structural"},
+        {"text": "plan.yaml budget.max_cost_usd is 10.00", "type": "exact"},
+        {"text": "Pauses after PLAN phase to show cost estimate and wait for approval", "type": "behavioral"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to optimize content moderation prompts for my e-commerce platform. Test it against as many models as you can find",
+      "expected_output": "Researches current LLMs via web search, discovers 4-8 models across budget/balanced/premium tiers, creates experiment with content-moderation-specific templates and test data",
+      "files": [],
+      "assertions": [
+        {"text": "research_brief.md discovers at least 4 models via web search (not just static references)", "type": "content"},
+        {"text": "research_brief.md identifies task type as classification", "type": "content"},
+        {"text": "Templates include output format for APPROVE/REJECT/ESCALATE or similar classification labels", "type": "content"},
+        {"text": "Test data generated with easy/hard/edge distribution if user didn't provide any", "type": "structural"},
+        {"text": "Each model entry has base_url and api_key_env fields", "type": "structural"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "test gpt-5.4 and glm-5 and llama-4-70b on Together AI for analyzing jira tickets. I have some sample tickets in tickets.jsonl",
+      "expected_output": "Uses user-specified models, researches their API endpoints and pricing, uses user-provided test data instead of generating",
+      "files": ["tickets.jsonl"],
+      "assertions": [
+        {"text": "plan.yaml axes.models includes gpt-5.4, glm-5, and llama-4-70b", "type": "exact"},
+        {"text": "research_brief.md looks up Together AI base_url and api_key_env for llama-4-70b", "type": "content"},
+        {"text": "plan.yaml data.source is user_provided, not generate", "type": "exact"},
+        {"text": "Does not generate test data — uses tickets.jsonl", "type": "behavioral"},
+        {"text": "Models have provider field set (not just name)", "type": "structural"}
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "run a quick smoke test on my invoice extraction prompts",
+      "expected_output": "Triggers fast-test workflow, minimal 2x2 matrix, fast execution",
+      "files": [],
+      "assertions": [
+        {"text": "Loads references/workflow-fast-test.md", "type": "behavioral"},
+        {"text": "Uses minimal matrix (2 templates, 2 models or fewer)", "type": "structural"},
+        {"text": "Completes faster than full pipeline", "type": "performance"}
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "the results from the last experiment weren't great. can you iterate and try to improve the scores? focus on the edge cases",
+      "expected_output": "Triggers iterative workflow, reads previous evaluations/summary.yaml, narrows parameter ranges around top performers",
+      "files": [],
+      "assertions": [
+        {"text": "Loads references/workflow-iterative.md", "type": "behavioral"},
+        {"text": "Reads existing evaluations/summary.yaml from previous experiment", "type": "behavioral"},
+        {"text": "Creates new templates that are variations of previous winners", "type": "content"}
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "I want to find the cheapest model that can still do sentiment analysis with at least 85% accuracy. test haiku, gpt-4o-mini, and gemini flash. budget $3",
+      "expected_output": "Creates budget-focused experiment with 3 cheap models, includes accuracy as primary evaluation criterion",
+      "files": [],
+      "assertions": [
+        {"text": "plan.yaml budget.max_cost_usd is 3.00", "type": "exact"},
+        {"text": "All models are budget tier", "type": "content"},
+        {"text": "Evaluation criteria include accuracy with high weight", "type": "content"},
+        {"text": "Report includes cost-performance analysis identifying cheapest model meeting threshold", "type": "content"}
+      ]
+    }
+  ]
+}

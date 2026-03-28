@@ -1,0 +1,156 @@
+# Prompt-Engineer Skill — Trigger Tests
+#
+# These tests verify that the skill's SKILL.md description correctly scopes
+# activation. Per the Claude blog's description-optimization guidance, the
+# description field in SKILL.md must be precise enough that:
+#   1. The orchestrator routes prompt-engineering tasks TO this skill.
+#   2. The orchestrator does NOT route unrelated tasks to this skill.
+#
+# Test this by presenting each prompt to the orchestrator and checking which
+# skill (if any) is invoked. No pipeline execution is required.
+#
+# Format:
+#   prompt:  exact user message
+#   reason:  why this prompt should (or should not) trigger the skill
+
+# =============================================================================
+# SHOULD TRIGGER (15 prompts)
+# These prompts describe optimization, experimentation, comparison, or
+# systematic evaluation of prompts — all within the skill's stated scope.
+# =============================================================================
+
+should_trigger:
+
+  - prompt: "Optimize content moderation prompts for my e-commerce platform"
+    reason: >
+      Explicit request to optimize prompts for a named domain. The word
+      'optimize' combined with 'prompts' is the clearest trigger for this skill.
+
+  - prompt: "Find the best prompt for extracting data from invoices. Use Claude and GPT-4o"
+    reason: >
+      'Find the best prompt' signals a search/comparison task across multiple
+      candidates, not a single-prompt request. Model preferences are included.
+
+  - prompt: "I want to A/B test different prompt strategies for my chatbot"
+    reason: >
+      'A/B test' and 'prompt strategies' directly describe the experiment-matrix
+      approach this skill implements.
+
+  - prompt: "Run a prompt experiment to improve my summarization pipeline"
+    reason: >
+      'Run a prompt experiment' is a direct invocation of the skill's core
+      purpose. 'Improve' signals iterative optimization.
+
+  - prompt: "Compare few-shot vs chain-of-thought for sentiment analysis"
+    reason: >
+      Comparing specific prompt techniques across a task type is the skill's
+      primary use case — it requires a template matrix with at least two variants.
+
+  - prompt: "Test 5 models to find the best one for code review prompts"
+    reason: >
+      Multi-model benchmarking with a prompt focus is explicitly within scope.
+      The model axis is a first-class dimension in the experiment matrix.
+
+  - prompt: "Which prompt technique works best for my customer support bot — zero-shot, few-shot, or chain-of-thought?"
+    reason: >
+      Asking which technique 'works best' implies empirical testing, not a
+      single recommendation. This maps directly to the template axis in plan.yaml.
+
+  - prompt: "I need to systematically evaluate prompt variations for my medical coding assistant"
+    reason: >
+      'Systematically evaluate prompt variations' is precise terminology for what
+      this skill does. Domain (medical coding) adds specificity without excluding.
+
+  - prompt: "Help me find the optimal prompt formula for classifying support tickets"
+    reason: >
+      'Optimal prompt formula' echoes the skill's own language from SKILL.md.
+      Classification is a supported task type.
+
+  - prompt: "Run an experiment to compare GPT-4o-mini and Gemini Flash on my data extraction prompts"
+    reason: >
+      Multi-model prompt comparison with a task context. The user is not asking
+      for a single prompt — they want a systematic comparison.
+
+  - prompt: "My current summarization prompt has 70% accuracy. Can you help me improve it through testing?"
+    reason: >
+      'Improve through testing' indicates the user wants iterative experimentation,
+      not a one-shot rewrite. The existing-prompt path is supported in RESEARCH.
+
+  - prompt: "Benchmark different prompting strategies for extracting structured data from legal documents"
+    reason: >
+      'Benchmark' is an experimental framing. 'Different strategies' implies
+      multiple template variants. Legal document extraction is a supported task type.
+
+  - prompt: "I want to experiment with temperature settings and prompt formats to maximize my classification F1 score"
+    reason: >
+      This explicitly references two axes of the experiment matrix (parameter:
+      temperature, template: prompt formats) and a quantitative success criterion.
+
+  - prompt: "Find the cheapest model and prompt combination that still achieves 90% accuracy for invoice parsing"
+    reason: >
+      Cost-accuracy tradeoff optimization is a core feature of the skill's
+      cost-performance Pareto analysis and budget-constrained execution.
+
+  - prompt: "Do a quick smoke test comparing zero-shot vs few-shot on my classification task, budget $3"
+    reason: >
+      'Smoke test' maps to the fast-test workflow variant. The technique comparison
+      and budget constraint are both supported parameters for the skill.
+
+# =============================================================================
+# SHOULD NOT TRIGGER (10 prompts)
+# These prompts describe tasks that are either single-prompt requests,
+# general coding tasks, direct execution tasks, or informational questions —
+# none of which require the experimentation pipeline this skill provides.
+# =============================================================================
+
+should_not_trigger:
+
+  - prompt: "Write me a prompt for my chatbot"
+    reason: >
+      The user wants one prompt, not a comparative experiment. 'Write me a prompt'
+      is a generation task, not an optimization task. No matrix or evaluation needed.
+
+  - prompt: "Help me debug this Python script"
+    reason: >
+      Debugging Python code is a software engineering task, entirely outside the
+      scope of prompt engineering experimentation.
+
+  - prompt: "Summarize this document"
+    reason: >
+      This is a direct task request — the user wants a summary, not an experiment
+      to find the best summarization prompt. The skill should not activate.
+
+  - prompt: "What is prompt engineering?"
+    reason: >
+      An informational question about a concept. The user wants an explanation,
+      not a pipeline run. This is a knowledge question, not an action request.
+
+  - prompt: "Can you improve this prompt? [prompt text]"
+    reason: >
+      Single-prompt refinement is different from systematic experimentation.
+      The user wants editorial feedback on one prompt, not a comparative matrix.
+
+  - prompt: "Translate this text to French"
+    reason: >
+      A translation task — completely unrelated to prompt engineering. No
+      prompt optimization or model comparison is requested or implied.
+
+  - prompt: "What temperature should I use for creative writing?"
+    reason: >
+      A parameter recommendation question. The user wants a single answer, not
+      an experiment to empirically determine the best temperature setting.
+
+  - prompt: "Fix the bug in my prompt — it's generating responses that are too long"
+    reason: >
+      Single-prompt debugging. The user has a specific, identified problem with
+      one prompt. This does not require a comparative experiment matrix.
+
+  - prompt: "Generate 10 example customer support messages for me to use as test data"
+    reason: >
+      A data-generation request, not a prompt-optimization request. The user
+      wants content output, not an experiment plan or model comparison.
+
+  - prompt: "How do I use the Anthropic API in Python?"
+    reason: >
+      A technical how-to question about an API. The user wants documentation or
+      a code snippet, not a prompt experimentation pipeline.

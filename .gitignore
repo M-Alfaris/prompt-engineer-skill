@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+.pytest_cache/
 *.pyc
 *.pyo
 *.egg-info/
@@ -22,15 +23,13 @@ venv/
 .DS_Store
 Thumbs.db
 
-# Experiment data (generated at runtime)
-**/experiments/2026-*/
+# Experiment data (generated at runtime, both root and inside skill)
+/experiments/
 **/experiments/20*/
 !**/experiments/.gitkeep
 
 # Dev artifacts (not shipped with the skill)
-**/prompt-engineer-workspace/
 **/benchmarks/
-**/evals/
 *.skill
 
 # Runtime files copied to project root by the skill (not part of repo)
