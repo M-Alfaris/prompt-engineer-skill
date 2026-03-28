@@ -14,10 +14,10 @@ The skill includes 24+ test cases across 7 categories in `promptforge/evals/`:
 
 ```bash
 # Run trigger tests (fast, no API calls)
-python -m scripts.run_evals --experiment evals/ --suite trigger
+python -m scripts.run_evals --category trigger
 
 # Run full eval suite (requires API keys)
-python -m scripts.run_evals --experiment evals/
+python -m scripts.run_evals
 ```
 
 Test categories: trigger recognition, research output, plan validation, template quality, execution correctness, scoring stability, report completeness.

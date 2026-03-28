@@ -34,7 +34,7 @@
 
 **Every combination, not just the ones you thought of.** Full factorial design crosses every template with every model and every parameter set. No cherry-picking, no gut feelings.
 
-**Four evaluation methods, not just vibes.** LLM-as-judge for subjective quality, programmatic code checks for format compliance, ground truth comparison (F1, Jaccard, exact match) for accuracy, and consistency analysis across repetitions.
+**Multiple evaluation methods, not just vibes.** LLM-as-judge for subjective quality, programmatic code checks for format compliance, ground truth comparison (F1, Jaccard, exact match) for accuracy, and regex pattern matching.
 
 **Cost is a first-class metric.** Every API call logs token count, latency, and cost. Budget enforcement stops execution at your ceiling. Pareto analysis shows you the cheapest option at every quality level.
 
@@ -212,8 +212,7 @@ Auto-detects which API keys you have. Only recommends models you can access.
 | **Code checks** | Format compliance (valid JSON, length) | Deterministic programmatic validation |
 | **Ground truth** | Known correct answers | F1, Jaccard, exact match comparison |
 | **Regex** | Pattern matching | Custom regex per criterion |
-| **Consistency** | Stability across repetitions | Std deviation analysis |
-| **Cost tracking** | Every call | Token count, latency, TTFT, cost per call |
+| **Cost tracking** | Every call | Token count, latency, cost per call |
 
 Each criterion uses the best method automatically. Judge model is always the cheapest available — different from the models being tested.
 

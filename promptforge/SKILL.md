@@ -137,7 +137,7 @@ python scripts/export_winner.py --experiment experiments/{id}/
 python scripts/generate_report.py --experiment experiments/{id}/
 ```
 
-All scripts support `--json` for structured output.
+Most scripts support `--json` for structured output.
 
 ---
 

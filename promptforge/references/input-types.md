@@ -78,7 +78,7 @@ Not every parameter works on every provider. Only include parameters the target 
 | max_tokens | yes | yes | yes (as max_output_tokens) | yes | yes (as num_predict) |
 | top_p | yes | yes | yes | yes | yes |
 | top_k | yes | no | yes | no | yes |
-| json_mode | yes (via tool_use) | yes (response_format) | yes (response_mime_type) | yes (response_format) | yes (format: json) |
+| json_mode | no (use prompt instructions) | yes (response_format) | yes (response_mime_type) | yes (response_format) | yes (format: json) |
 | frequency_penalty | no | yes | no | yes | yes (repeat_penalty) |
 | presence_penalty | no | yes | no | yes | no |
 | thinking / thinking_budget | yes (Claude only) | no | no | no | no |
@@ -196,7 +196,7 @@ Provider-specific image formats for the custom execution script:
 Part(text=user_text), Part(inline_data=Blob(mime_type=media_type, data=image_bytes))
 ```
 
-Vision-capable models: GPT-4o, Claude Sonnet/Opus, Gemini Flash/Pro. Check during RESEARCH which discovered models support vision.
+Vision-capable models: GPT-4o, Claude Sonnet/Opus. Note: The Google provider does not yet support vision inputs — image blocks are dropped. Check during RESEARCH which discovered models support vision.
 
 ### Multi-Turn Conversations (adapted pipeline)
 

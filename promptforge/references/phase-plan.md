@@ -196,7 +196,7 @@ evaluation:
   judge_model: "claude-sonnet-4-20250514"
 
 execution:
-  strategy: "full"              # full | fractional | latin_square | adaptive
+  strategy: "full"              # full | fractional
   repetitions: 3
   randomize_order: true
   max_concurrent: 5

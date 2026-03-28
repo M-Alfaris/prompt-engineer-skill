@@ -3,7 +3,7 @@
 Usage:
     python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/
     python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/ --dry-run
-    python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/ --from evaluate
+    python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/ --from EVALUATE
     python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/ --clean
     python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/ --resume
 
@@ -538,7 +538,7 @@ def _build_parser() -> argparse.ArgumentParser:
 Examples:
   python -m scripts.run_pipeline --experiment experiments/2026-03-25-keyword-extraction/
   python -m scripts.run_pipeline --experiment experiments/... --dry-run
-  python -m scripts.run_pipeline --experiment experiments/... --from evaluate
+  python -m scripts.run_pipeline --experiment experiments/... --from EVALUATE
   python -m scripts.run_pipeline --experiment experiments/... --resume
   python -m scripts.run_pipeline --experiment experiments/... --clean
         """,

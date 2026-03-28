@@ -23,8 +23,8 @@ Run `generate_report.py` first, then read:
 - `experiments/{id}/plan.yaml` — experiment configuration
 - `experiments/{id}/research_brief.md` — original task definition and success criteria
 - `experiments/{id}/matrix.yaml` — cell definitions and statuses
-- `experiments/{id}/scores.jsonl` — per-cell criterion scores
-- `experiments/{id}/summary.yaml` — aggregated statistics and axis effects
+- `experiments/{id}/evaluations/scores.jsonl` — per-cell criterion scores
+- `experiments/{id}/evaluations/summary.yaml` — aggregated statistics and axis effects
 
 Identify the winning cell: the (template, model, parameters) combination with the highest mean composite score. Load the actual prompt text from its template file.
 
@@ -117,8 +117,8 @@ List all data files produced by this experiment:
 - `experiments/{id}/matrix.yaml`
 - `experiments/{id}/templates/*.yaml`
 - `experiments/{id}/results/*.jsonl`
-- `experiments/{id}/scores.jsonl`
-- `experiments/{id}/summary.yaml`
+- `experiments/{id}/evaluations/scores.jsonl`
+- `experiments/{id}/evaluations/summary.yaml`
 
 ---
 
