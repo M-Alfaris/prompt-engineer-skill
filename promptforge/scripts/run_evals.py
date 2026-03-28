@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run eval test cases for the prompt-engineer skill.
+"""Run eval test cases for the PromptForge skill.
 
 Reads evals/test_cases.yaml and executes all programmatic checks (file
 existence, schema validation, weight sums, required fields). Tests that
@@ -911,7 +911,7 @@ def _print_plain(summary: EvalSummary, category_filter: str | None) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Run eval test cases for the prompt-engineer skill.",
+        description="Run eval test cases for the PromptForge skill.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

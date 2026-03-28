@@ -1028,7 +1028,7 @@ async def evaluate_experiment(experiment_dir: Path) -> None:
     if not plan_path.exists():
         raise FileNotFoundError(f"plan.yaml not found at {plan_path}")
 
-    console.rule("[bold blue]Prompt Engineering Evaluator[/]")
+    console.rule("[bold blue]PromptForge Evaluator[/]")
     console.print(f"Experiment: [cyan]{experiment_dir.name}[/]")
 
     config: ExperimentConfig = load_experiment_config(experiment_dir)

@@ -369,7 +369,7 @@ async def run_experiment(experiment_dir: Path) -> dict[str, Any]:
     if not plan_path.exists():
         raise FileNotFoundError(f"plan.yaml not found at {plan_path}")
 
-    console.rule("[bold blue]Prompt Engineering Experiment Runner[/]")
+    console.rule("[bold blue]PromptForge Experiment Runner[/]")
     console.print(f"Experiment: [cyan]{experiment_dir.name}[/]")
 
     # ------------------------------------------------------------------

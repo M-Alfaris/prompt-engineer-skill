@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark the prompt-engineer skill.
+"""Benchmark the PromptForge skill.
 
 Runs all eval test cases, captures timing and token-usage metrics, and writes
 a snapshot to benchmarks/YYYY-MM-DD-HH-MM.json. Optionally compares against a
@@ -409,7 +409,7 @@ def _print_benchmark_plain(result: dict[str, Any], diff: dict[str, Any] | None) 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Benchmark the prompt-engineer skill and write results to benchmarks/.",
+        description="Benchmark the PromptForge skill and write results to benchmarks/.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

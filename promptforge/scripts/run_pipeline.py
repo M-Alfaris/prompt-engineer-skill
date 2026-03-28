@@ -651,7 +651,7 @@ async def _run_pipeline_async(
             f"[bold]Experiment:[/] {experiment_dir}\n"
             f"[bold]Stages:    [/] {' -> '.join(active_stages)}"
             + (" [dim](dry-run)[/]" if dry_run else ""),
-            title="[bold cyan]Prompt Engineering Pipeline[/]",
+            title="[bold cyan]PromptForge Pipeline[/]",
             border_style="cyan",
         )
     )

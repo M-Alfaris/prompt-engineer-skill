@@ -1,9 +1,9 @@
 ---
-name: prompt-engineer
+name: promptforge
 description: Systematic prompt engineering experimentation framework that tests massive combinations of prompt templates, parameters, and LLM models to discover the optimal formula for any task. Make sure to use this skill whenever the user mentions prompt optimization, prompt testing, prompt comparison, A/B testing prompts, finding the best model, benchmarking models, prompt experiments, testing different prompt strategies, improving prompt quality, comparing few-shot vs zero-shot, testing prompt variations, or evaluating LLM performance — even if they don't explicitly say "experiment" or "matrix." Also trigger when users want to test multiple models on the same task, find the cheapest model that still works, or systematically improve any AI-powered feature. Supports full factorial, fractional, and adaptive matrix strategies with LLM-as-judge evaluation, budget tracking, and structured JSON output for dashboards.
 ---
 
-# Prompt Engineer
+# PromptForge
 
 Autonomous experimentation pipeline. User provides a goal — the skill researches current LLMs, prompt techniques, and domain context, then runs a combinatorial experiment to find the winning formula.
 

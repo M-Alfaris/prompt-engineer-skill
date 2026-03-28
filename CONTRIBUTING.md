@@ -1,16 +1,16 @@
 # Contributing
 
-Thanks for your interest in contributing to the Prompt Engineer Skill.
+Thanks for your interest in contributing to PromptForge.
 
 ## Getting Started
 
 1. Fork and clone the repo
-2. Install dependencies: `cd prompt-engineer && pip install -r requirements.txt`
+2. Install dependencies: `cd promptforge && pip install -r requirements.txt`
 3. Ensure your project root has a `.env` with at least one API key (see `.env.example` for the format)
 
 ## Running the Eval Suite
 
-The skill includes 24+ test cases across 7 categories in `prompt-engineer/evals/`:
+The skill includes 24+ test cases across 7 categories in `promptforge/evals/`:
 
 ```bash
 # Run trigger tests (fast, no API calls)

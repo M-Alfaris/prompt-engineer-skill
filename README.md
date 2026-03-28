@@ -1,6 +1,6 @@
 <div align="center">
 
-# Prompt Engineer Skill
+# PromptForge
 
 ### Stop guessing. Start experimenting. Find the formula.
 
@@ -85,8 +85,8 @@ Open `viewer.html` with any experiment's `report_data.json` for an interactive d
 ### 1. Install
 
 ```bash
-git clone https://github.com/m-alfaris/prompt-engineer-skill.git
-cd prompt-engineer-skill/prompt-engineer
+git clone https://github.com/m-alfaris/promptforge.git
+cd promptforge
 pip install -r requirements.txt
 ```
 
@@ -101,11 +101,11 @@ cp .env.example /path/to/your/project/.env
 
 **Claude Code:**
 ```bash
-claude skill install ./prompt-engineer
+claude skill install ./promptforge
 ```
 
 **Cursor / VS Code / Any Agent Skills tool:**
-Drop the `prompt-engineer/` folder into your project — the tool picks up `SKILL.md` automatically.
+Drop the `promptforge/` folder into your project — the tool picks up `SKILL.md` automatically.
 
 Then say what you need:
 - "Optimize content moderation prompts for my e-commerce platform"
@@ -237,7 +237,7 @@ Previous results are stored and reused. The research phase reads prior experimen
 ## Project Structure
 
 ```
-prompt-engineer/
+promptforge/
   SKILL.md                    # Orchestrator — your AI tool reads this
   references/                 # Phase guides loaded on demand
     phase-research.md         #   Discover LLMs, techniques, domain context
@@ -312,7 +312,7 @@ Failed calls are logged and skipped. Partial results are preserved. The report f
 
 ## Contributing
 
-Contributions welcome. The skill includes an eval system with 24+ test cases across 7 categories (trigger recognition, phase outputs, scoring stability, report completeness). See [`evals/`](prompt-engineer/evals/) for the test suite.
+Contributions welcome. The skill includes an eval system with 24+ test cases across 7 categories (trigger recognition, phase outputs, scoring stability, report completeness). See [`evals/`](promptforge/evals/) for the test suite.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
