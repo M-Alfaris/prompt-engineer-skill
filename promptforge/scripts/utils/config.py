@@ -161,10 +161,10 @@ class ModelConfig(BaseModel):
         api_key_env: Name of the environment variable that holds the
             API key for this provider.  Set to ``None`` for local
             unauthenticated endpoints.
-        cost_per_million_input: Optional input-token price in USD per 1 000
+        cost_per_million_input: Optional input-token price in USD per 1 million
             tokens.  When set, overrides the static pricing table in
             ``default_config.yaml``.
-        cost_per_million_output: Optional output-token price in USD per 1 000
+        cost_per_million_output: Optional output-token price in USD per 1 million
             tokens.  When set alongside ``cost_per_million_input``, overrides
             the static pricing table.
     """

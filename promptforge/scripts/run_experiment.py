@@ -321,6 +321,7 @@ async def _execute_cell(
         "template_id": template_id,
         "param_id": cell["param_id"],
         "model": cell["model_name"],
+        "model_id": cell.get("model_id", ""),
         "provider": cell["provider"],
         "parameters": {
             "temperature": cell["temperature"],

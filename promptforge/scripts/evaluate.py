@@ -746,7 +746,10 @@ async def _score_with_ground_truth(
             parsed = json.loads(clean)
         except json.JSONDecodeError:
             m = re.search(r"\{.*\}", raw_text, re.DOTALL)
-            parsed = json.loads(m.group()) if m else {}
+            try:
+                parsed = json.loads(m.group()) if m else {}
+            except json.JSONDecodeError:
+                parsed = {}
 
         try:
             return float(max(0.0, min(10.0, parsed.get("score", 0.0))))

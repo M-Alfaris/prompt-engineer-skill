@@ -306,13 +306,20 @@ class AnthropicProvider:
                         new_content.append(block)
                 msg["content"] = new_content
 
+        # Detect if thinking mode is enabled
+        thinking_enabled = bool(extra.get("thinking"))
+
         api_kwargs: dict[str, Any] = {
             "model": model,
             "max_tokens": max_tokens,
             "messages": chat_messages,
-            "temperature": temperature,
-            "top_p": top_p,
         }
+        # Anthropic requires temperature=1.0 (or omitted) when thinking is enabled
+        if thinking_enabled:
+            api_kwargs["temperature"] = 1.0
+        else:
+            api_kwargs["temperature"] = temperature
+            api_kwargs["top_p"] = top_p
         if resolved_system:
             api_kwargs["system"] = resolved_system
         # Map known params that need transformation for Anthropic
@@ -336,7 +343,13 @@ class AnthropicProvider:
         response = await _with_retry(self._client.messages.create, **api_kwargs)
         latency_ms = (time.perf_counter() - t0) * 1000
 
-        text = response.content[0].text
+        # Handle thinking-mode responses where content[0] may be a ThinkingBlock
+        text = ""
+        if response.content:
+            for block in response.content:
+                if hasattr(block, "text"):
+                    text = block.text
+                    break
         usage = response.usage
         return CompletionResult(
             text=text,

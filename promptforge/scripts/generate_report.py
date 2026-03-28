@@ -106,7 +106,7 @@ def _detect_criterion_columns(df: pd.DataFrame) -> list[str]:
     excluded = {
         "cell_id", "template_id", "model", "model_id", "param_id",
         "input_id", "repetition", "composite_score", "judge_reasoning",
-        "cost_usd", "latency_ms", "input_tokens", "output_tokens",
+        "cost_usd", "latency_ms", "tokens_in", "tokens_out",
     }
     return [
         col for col in df.columns
